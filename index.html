@@ -648,7 +648,6 @@
     let columnToDeleteId = null; let columnToRenameId = null;
     let undoStack = []; let redoStack = []; let toastTimeout;
     
-    // NEW: TYRE OVERRIDE ENGINE
     let tyreOverrides = {};
     let currentEditingCell = null;
 
@@ -660,7 +659,6 @@
         toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 5000);
     }
 
-    // --- SMART MIGRATION & HEALING SYSTEM ---
     function healTableAlignment() {
         const requiredInvCells = 9 + customHeadings.length; 
         document.querySelectorAll('#tableBody tr').forEach(row => {
@@ -832,7 +830,6 @@
         container.classList.remove('limit-10');
     }
 
-    // --- SMART BUCKET TYRE STOCK ENGINE ---
     function switchToTyreStock() {
         switchMainTab('tyreStockView', '');
         document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove("show-dropdown"));
@@ -920,7 +917,6 @@
                 let fs = (tyreOverrides[t] || data.status || 'UNKNOWN').toUpperCase();
                 data.finalStatus = fs;
 
-                // NEW: FIXING THE BUCKET LOGIC FOR PROPER CLASSIFICATION
                 if (fs.includes('READY') || fs.includes('NEW') || (fs.includes('GODOWN') && !fs.includes('SCRAP'))) { 
                     data.bucket = 'ready'; cReady++; 
                 }
@@ -943,7 +939,6 @@
             let safeTyre = item.tyre.replace(/'/g, "\\'");
             let fsCheck = item.finalStatus;
             
-            // NEW: DYNAMIC ACTION BUTTON GENERATION BASED ON BUCKETS
             if (fsCheck.includes('SOLD')) {
                 // No action
             } else if (fsCheck.includes('VENDOR') || fsCheck === 'REMOLD') {
@@ -1436,7 +1431,6 @@
         focusNextField(input);
     }
 
-    // --- REAL-TIME TABLE EDITING ENGINE ---
     function handleTdSuggest(cell) {
         let listType = null;
         const tableId = cell.closest('tbody').id;
@@ -1692,6 +1686,58 @@
         if (e.ctrlKey && e.key.toLowerCase() === 'y') {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.classList.contains('is-editing')) return;
             e.preventDefault(); performRedo();
+        }
+    });
+
+    // --- GLOBAL SHORTCUTS ENGINE ---
+    window.addEventListener('keydown', function(e) {
+        if (e.altKey && e.key === '1') { e.preventDefault(); switchToInventoryView(); }
+        if (e.altKey && e.key === '2') { e.preventDefault(); switchToTyreView(); }
+        if (e.altKey && e.key === '3') { e.preventDefault(); switchToDashboardView(); }
+        if (e.altKey && e.key === '4') { e.preventDefault(); switchToPartyView(); }
+        if (e.altKey && e.key === '5') { e.preventDefault(); switchToAllBillsView(); }
+        if (e.altKey && e.key === '6') { e.preventDefault(); switchToAllTyresView(); }
+        if (e.altKey && e.key === '7') { e.preventDefault(); switchToTyreStock(); }
+        
+        if (e.altKey && e.key.toLowerCase() === 'e') { 
+            e.preventDefault(); 
+            const activeView = document.querySelector('.app-container[style*="display: block"]');
+            if(activeView && (activeView.id === 'inventoryView' || activeView.id === 'allBillsView')) openExportModal('inv');
+            else if(activeView && (activeView.id === 'tyreView' || activeView.id === 'allTyresView' || activeView.id === 'tyreStockView')) openExportModal('tyre');
+        }
+        
+        if (e.altKey && e.key.toLowerCase() === 's') { 
+            e.preventDefault(); 
+            const activeView = document.querySelector('.app-container[style*="display: block"]');
+            if(activeView && activeView.id === 'inventoryView') saveFullInvoice(); 
+            else if(activeView && activeView.id === 'tyreView') saveFullTyreEntry();
+        }
+        
+        if (e.altKey && e.key.toLowerCase() === 'd') { 
+            e.preventDefault(); 
+            const activeView = document.querySelector('.app-container[style*="display: block"]');
+            if(activeView && activeView.id === 'inventoryView') document.getElementById('invDate').focus();
+            else if(activeView && activeView.id === 'tyreView') document.getElementById('tDate').focus();
+            else if(activeView && activeView.id === 'tyreStockView') document.getElementById('stkDate').focus();
+        }
+        
+        if (e.altKey && e.key.toLowerCase() === 'p') { 
+            e.preventDefault(); 
+            const activeView = document.querySelector('.app-container[style*="display: block"]');
+            if(activeView && activeView.id === 'inventoryView') document.getElementById('pParty').focus();
+            else if(activeView && activeView.id === 'tyreView') document.getElementById('tParty').focus();
+        }
+        
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+            document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = 'none');
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show-dropdown'));
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+            document.getElementById('renameHeadingModal').style.display = 'none';
+            
+            if (typeof stopEditing === 'function' && typeof currentEditingCell !== 'undefined' && currentEditingCell) {
+                stopEditing(currentEditingCell);
+            }
         }
     });
 
