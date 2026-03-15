@@ -89,7 +89,7 @@
         .main-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 13px; white-space: nowrap; outline: none; transition: 0.1s; text-transform: uppercase; }
         .main-table td[contenteditable="true"] { cursor: cell; caret-color: transparent; }
         .main-table td[contenteditable="true"]:focus { background: #fffbeb; box-shadow: inset 0 0 0 2px var(--warning); }
-        .main-table td.is-editing { cursor: text; caret-color: var(--primary); background: white !important; box-shadow: inset 0 0 0 2px var(--accent) !important; }
+        .main-table td.is-editing { cursor: text; caret-color: var(--primary); background: white !important; box-shadow: inset 0 0 0 2px var(--accent) !important; position: relative;}
         
         .tbl-filter { width: 100%; min-width: 80px; padding: 4px 6px; font-size: 10px; margin-top: 6px; border: 1px solid #cbd5e1; border-radius: 3px; box-sizing: border-box; font-weight: normal; background: white; color: #1e293b; height: auto; cursor: text; }
         .tbl-filter:focus { border-color: var(--accent); }
@@ -134,6 +134,8 @@
 </head>
 <body>
 
+<div id="tdSuggestBox" class="suggestion-box" style="position: absolute; display: none; z-index: 1000000; box-shadow: 0 8px 20px rgba(0,0,0,0.3);"></div>
+
 <div id="toastNotification" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#1e293b; color:white; padding:12px 24px; border-radius:6px; font-size:14px; font-weight:600; z-index:9999999; box-shadow:0 10px 25px rgba(0,0,0,0.3); align-items:center; gap:15px;">
     <span id="toastText">Action completed.</span>
     <button onclick="performUndo(); document.getElementById('toastNotification').style.display='none';" style="background:none; border:none; color:var(--accent); font-weight:800; cursor:pointer; font-size:14px; padding:0; text-transform: uppercase;">UNDO</button>
@@ -148,6 +150,7 @@
     <div class="header">
         <h2>Invoice Data Entry</h2>
         <div class="action-bar">
+            <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
             <button class="btn-icon" onclick="openExportModal('inv')" title="Print & Export (Alt+E)">🖨️ Export</button>
             <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
             <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
@@ -254,6 +257,7 @@
     <div class="header" style="margin-bottom: 5px;">
         <h2>📂 All Entered Bills</h2>
         <div class="action-bar">
+            <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
             <button class="btn-icon" onclick="openExportModal('inv')" title="Print & Export (Alt+E)">🖨️ Export</button>
             <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
             <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
@@ -268,6 +272,7 @@
     <div class="header">
         <h2>Tyre Fitting & Tracking</h2>
         <div class="action-bar">
+            <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
             <button class="btn-icon" onclick="openExportModal('tyre')" title="Print & Export (Alt+E)">🖨️ Export</button>
             <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
             <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
@@ -306,10 +311,9 @@
             </div>
         </div>
     </div>
-    
     <div class="erp-section">
         <h3 class="erp-section-title">2. Add Tyres</h3>
-        <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1.5fr 1.5fr auto;">
+        <div class="form-grid" style="grid-template-columns: 1.2fr 1fr 1.2fr 1fr 1fr 1fr 1.5fr 1.5fr auto;">
             
             <div class="input-group">
                 <label>New Tyre No</label>
@@ -325,7 +329,7 @@
             <div class="input-group">
                 <label>Old Tyre No</label>
                 <div class="input-wrapper">
-                    <input type="search" id="tOldTyre" autocomplete="off" onkeyup="handleSuggest(this, 'tyre', event)" onfocus="handleSuggest(this, 'tyre', {forceAll: true})">
+                    <input type="search" id="tOldTyre" autocomplete="off" placeholder="MISSING" onkeyup="handleSuggest(this, 'tyre', event)" onfocus="handleSuggest(this, 'tyre', {forceAll: true})">
                     <span class="dropdown-icon" onclick="toggleSuggest('tOldTyre', 'tyre')">▼</span>
                     <div class="suggestion-box"></div>
                 </div>
@@ -333,6 +337,8 @@
             
             <div class="input-group"><label>Old KM</label><input type="number" id="tOldKM" autocomplete="off" oninput="calcRunKM()"></div>
             <div class="input-group"><label>Run KM (Auto)</label><input type="text" id="tRunKM" autocomplete="off" readonly style="background:#eef2ff; color:var(--accent); font-weight:bold;"></div>
+            
+            <div class="input-group"><label>Days Run</label><input type="number" id="tDays" autocomplete="off" placeholder="e.g. 45"></div>
             
             <div class="input-group">
                 <label>Old Tyre Status</label>
@@ -346,7 +352,7 @@
             <div class="input-group"><label>Remark</label><input type="search" id="tRemark" autocomplete="off"></div>
             <div class="input-group"><button class="btn-add-item" id="btnAddTyreItem" onclick="addTyreItem()">+ Add (Enter)</button></div>
         </div>
-        <table class="mini-table" id="tyreMiniTable"><thead><tr><th>New Tyre</th><th>New KM</th><th>Old Tyre</th><th>Old KM</th><th>Run KM</th><th>Status</th><th>Remark</th><th>Del</th></tr></thead><tbody id="tyreMiniTableBody"></tbody></table>
+        <table class="mini-table" id="tyreMiniTable"><thead><tr><th>New Tyre</th><th>New KM</th><th>Old Tyre</th><th>Old KM</th><th>Run KM</th><th>Days</th><th>Status</th><th>Remark</th><th>Del</th></tr></thead><tbody id="tyreMiniTableBody"></tbody></table>
     </div>
 
     <button class="btn-save-invoice" style="margin-top: 15px;" onclick="saveFullTyreEntry()" id="saveTyreBtn">✔️ Save Complete Tyre Entry (Alt+S)</button>
@@ -366,6 +372,7 @@
                     <th><div>Old Tyre</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
                     <th><div>Old KM</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
                     <th><div>Run KM</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
+                    <th><div>Days</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
                     <th><div>Status</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
                     <th><div>Remark</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
                     <th>Act</th>
@@ -382,6 +389,7 @@
     <div class="header" style="margin-bottom: 5px;">
         <h2>📂 All Entered Tyres</h2>
         <div class="action-bar">
+            <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
             <button class="btn-icon" onclick="openExportModal('tyre')" title="Print & Export (Alt+E)">🖨️ Export</button>
             <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
             <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
@@ -389,6 +397,75 @@
         </div>
     </div>
     <div id="allTyresTableHost"></div>
+</div>
+
+<div id="tyreStockView" class="app-container full-view" style="display: none;">
+    <div class="header">
+        <h2>🛞 Smart Tyre Stock Inventory</h2>
+        <div class="action-bar">
+            <button class="btn-home" onclick="switchToAllTyresView()">← Back to Tyres</button>
+        </div>
+    </div>
+
+    <div class="metrics-row" style="margin-bottom: 15px; gap:10px;">
+        <div class="metric-card metric-success" style="padding: 15px;"><h3 style="font-size:11px; margin-bottom:5px;">🟢 Ready to Use</h3><p class="value" id="stockReady" style="font-size:20px;">0</p></div>
+        <div class="metric-card metric-warning" style="padding: 15px;"><h3 style="font-size:11px; margin-bottom:5px;">🟡 Action Needed / At Vendor</h3><p class="value" id="stockAction" style="font-size:20px;">0</p></div>
+        <div class="metric-card" style="padding: 15px; border-left-color:#ef4444;"><h3 style="font-size:11px; margin-bottom:5px;">🔴 Dead / Scrap / Sold</h3><p class="value" id="stockDead" style="font-size:20px;">0</p></div>
+        <div class="metric-card metric-primary" style="padding: 15px;"><h3 style="font-size:11px; margin-bottom:5px;">🔵 Total Inventory</h3><p class="value" id="stockTotal" style="font-size:20px;">0</p></div>
+    </div>
+
+    <div class="erp-section" style="margin-bottom: 10px;">
+        <h3 class="erp-section-title">Manual Stock Entry (Add New Tyres)</h3>
+        <div class="form-grid" style="grid-template-columns: 1fr 1.5fr 1fr 1fr 1.5fr auto;">
+            <div class="input-group">
+                <label>Date</label>
+                <div class="date-input-wrapper"><input type="search" id="stkDate" placeholder="DD-MM-YY" autocomplete="off" onblur="formatDate(this)"><input type="date" onchange="syncDate(this, 'stkDate')" tabindex="-1"></div>
+            </div>
+            <div class="input-group">
+                <label>Tyre No</label>
+                <div class="input-wrapper">
+                    <input type="search" id="stkTyre" autocomplete="off" onkeyup="handleSuggest(this, 'tyre', event)" onfocus="handleSuggest(this, 'tyre', {forceAll:true})">
+                    <span class="dropdown-icon" onclick="toggleSuggest('stkTyre', 'tyre')">▼</span>
+                    <div class="suggestion-box"></div>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Vehicle Out (Optional)</label>
+                <div class="input-wrapper">
+                    <input type="search" id="stkVeh" autocomplete="off" onkeyup="handleSuggest(this, 'vehicle', event)" onfocus="handleSuggest(this, 'vehicle', {forceAll:true})">
+                    <span class="dropdown-icon" onclick="toggleSuggest('stkVeh', 'vehicle')">▼</span>
+                    <div class="suggestion-box"></div>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Status</label>
+                <div class="input-wrapper">
+                    <input type="search" id="stkStatus" autocomplete="off" placeholder="NEW STOCK" onkeyup="handleSuggest(this, 'tyreStatus', event)" onfocus="handleSuggest(this, 'tyreStatus', {forceAll:true})">
+                    <span class="dropdown-icon" onclick="toggleSuggest('stkStatus', 'tyreStatus')">▼</span>
+                    <div class="suggestion-box"></div>
+                </div>
+            </div>
+            <div class="input-group"><label>Remark</label><input type="search" id="stkRemark" autocomplete="off"></div>
+            <div class="input-group"><button class="btn-add-item" id="btnAddStock" onclick="addManualStock()">+ Add Stock</button></div>
+        </div>
+    </div>
+
+    <div class="table-container" style="flex:1;">
+        <table class="main-table">
+            <thead>
+                <tr>
+                    <th style="min-width: 100px;">Date</th>
+                    <th>Tyre No</th>
+                    <th>Vehicle (Out From)</th>
+                    <th>Current Status</th>
+                    <th>Remark</th>
+                    <th>Source Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <div id="partyView" class="app-container" style="display: none;">
@@ -558,18 +635,22 @@
     </div>
 </div>
 
-<div class="shortcut-legend">Alt+1: Bills | Alt+2: Tyre | Alt+3: Dash | Alt+4: Party | Alt+5: All Bills | Alt+6: All Tyres | Alt+D: Date | Alt+P: Party | Alt+E: Export | Alt+S: Save | Esc: Close</div>
+<div class="shortcut-legend">Alt+1: Bills | Alt+2: Tyre | Alt+3: Dash | Alt+4: Party | Alt+5: All Bills | Alt+6: All Tyres | Alt+7: Stock | Alt+D: Date | Alt+P: Party | Alt+E: Export | Alt+S: Save | Esc: Close</div>
 
 <script>
     // --- GLOBAL STORAGE & DATABASE ---
     let partyMaster = {}; let masteredProducts = []; let masteredStatuses = ["SOLD", "SCRAP", "NEW", "RETURNED"]; 
     let masteredVehicles = []; let currentEditingParty = ""; let currentModalAction = null; let customHeadings = [];
     
-    let currentInvoiceItems = []; let currentTyreItems = [];
-    let masteredTyres = []; let masteredTyreStatuses = ["SCRAP IN GODOWN", "SOLD", "BLUST TYRE", "REMOLD", "GIVEN TO"]; 
+    let currentInvoiceItems = []; let currentTyreItems = []; let manualTyreStock = [];
+    let masteredTyres = []; let masteredTyreStatuses = ["SCRAP IN GODOWN", "SOLD", "BLUST TYRE", "REMOLD", "GIVEN TO", "NEW STOCK", "MISSING"]; 
     
     let columnToDeleteId = null; let columnToRenameId = null;
     let undoStack = []; let redoStack = []; let toastTimeout;
+    
+    // NEW: TYRE OVERRIDE ENGINE
+    let tyreOverrides = {};
+    let currentEditingCell = null;
 
     function showToast(message) {
         document.getElementById('toastText').innerText = message;
@@ -579,6 +660,7 @@
         toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 5000);
     }
 
+    // --- SMART MIGRATION & HEALING SYSTEM ---
     function healTableAlignment() {
         const requiredInvCells = 9 + customHeadings.length; 
         document.querySelectorAll('#tableBody tr').forEach(row => {
@@ -592,11 +674,11 @@
         });
 
         document.querySelectorAll('#tyreTableBody tr').forEach(row => {
-            while(row.children.length < 12) {
+            while(row.children.length < 13) { 
                 const td = document.createElement('td'); td.contentEditable = "true";
                 row.insertBefore(td, row.lastElementChild);
             }
-            while(row.children.length > 12) {
+            while(row.children.length > 13) {
                 row.removeChild(row.children[row.children.length - 2]);
             }
         });
@@ -608,7 +690,8 @@
         const oldData = localStorage.getItem('nsLogisticsData');
         const data = {
             partyMaster, masteredProducts, masteredStatuses, masteredVehicles, customHeadings,
-            masteredTyreStatuses, masteredTyres, invTable: document.getElementById('tableBody').innerHTML, tyreTable: document.getElementById('tyreTableBody').innerHTML
+            masteredTyreStatuses, masteredTyres, manualTyreStock, tyreOverrides,
+            invTable: document.getElementById('tableBody').innerHTML, tyreTable: document.getElementById('tyreTableBody').innerHTML
         };
         const newDataStr = JSON.stringify(data);
         if (!skipHistory && oldData && oldData !== newDataStr) {
@@ -652,6 +735,8 @@
                 if(Array.isArray(data.masteredStatuses)) masteredStatuses = data.masteredStatuses; 
                 if(Array.isArray(data.masteredVehicles)) masteredVehicles = data.masteredVehicles;
                 if(Array.isArray(data.masteredTyres)) masteredTyres = data.masteredTyres; 
+                if(Array.isArray(data.manualTyreStock)) manualTyreStock = data.manualTyreStock; 
+                if(data.tyreOverrides && typeof data.tyreOverrides === 'object') tyreOverrides = data.tyreOverrides;
                 
                 if(data.invTable) {
                     document.getElementById('tableBody').innerHTML = data.invTable;
@@ -664,11 +749,24 @@
                         }
                     });
                 }
-                if(data.tyreTable) document.getElementById('tyreTableBody').innerHTML = data.tyreTable;
+                
+                if(data.tyreTable) {
+                    document.getElementById('tyreTableBody').innerHTML = data.tyreTable;
+                    document.querySelectorAll('#tyreTableBody tr').forEach(row => {
+                        if(row.children.length === 12) {
+                            const td = document.createElement('td'); 
+                            td.contentEditable = "true"; 
+                            td.style.color = "var(--warning)";
+                            td.style.fontWeight = "bold";
+                            td.innerText = "-";
+                            row.insertBefore(td, row.children[9]); 
+                        }
+                    });
+                }
                 
                 if(Array.isArray(data.masteredTyreStatuses)) {
                     let loaded = data.masteredTyreStatuses.filter(s => !["SCRAP", "RETREAD", "SPARE"].includes(s));
-                    masteredTyreStatuses = [...new Set(["SCRAP IN GODOWN", "SOLD", "BLUST TYRE", "REMOLD", "GIVEN TO", ...loaded])];
+                    masteredTyreStatuses = [...new Set(["SCRAP IN GODOWN", "SOLD", "BLUST TYRE", "REMOLD", "GIVEN TO", "NEW STOCK", "MISSING", ...loaded])];
                 }
                 
                 document.querySelectorAll('.custom-in-perm, .custom-in-temp').forEach(el => el.parentElement.remove());
@@ -685,14 +783,16 @@
         if(!Array.isArray(masteredStatuses)) masteredStatuses = [];
         if(!Array.isArray(masteredVehicles)) masteredVehicles = [];
         if(!Array.isArray(masteredTyres)) masteredTyres = [];
+        if(!Array.isArray(manualTyreStock)) manualTyreStock = [];
 
         healTableAlignment(); 
         window.isRestoring = false;
         saveDatabase(isUndoRedo);
+        renderTyreStock();
     }
     
     document.getElementById('tableBody').addEventListener('blur', function(e) { if(e.target.tagName === 'TD') saveDatabase(); }, true);
-    document.getElementById('tyreTableBody').addEventListener('blur', function(e) { if(e.target.tagName === 'TD') saveDatabase(); }, true);
+    document.getElementById('tyreTableBody').addEventListener('blur', function(e) { if(e.target.tagName === 'TD') { saveDatabase(); renderTyreStock(); } }, true);
     window.onload = loadDatabase;
 
     function switchMainTab(viewId, btnId) {
@@ -730,6 +830,161 @@
         const container = document.getElementById('sharedTyreTableContainer');
         document.getElementById('allTyresTableHost').appendChild(container);
         container.classList.remove('limit-10');
+    }
+
+    // --- SMART BUCKET TYRE STOCK ENGINE ---
+    function switchToTyreStock() {
+        switchMainTab('tyreStockView', '');
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove("show-dropdown"));
+        renderTyreStock();
+        document.getElementById('stkDate').focus();
+    }
+
+    function addManualStock() {
+        const dateEl = document.getElementById('stkDate'); const tyreEl = document.getElementById('stkTyre'); 
+        const vehEl = document.getElementById('stkVeh'); const statEl = document.getElementById('stkStatus'); const remEl = document.getElementById('stkRemark');
+        
+        const date = dateEl.value.trim(); const tyre = tyreEl.value.toUpperCase().trim(); 
+        const veh = vehEl.value.toUpperCase().trim(); const status = statEl.value.toUpperCase().trim(); const remark = remEl.value.trim();
+        
+        if (!date || !tyre || !status) { alert("Please fill Date, Tyre No, and Status."); return; }
+        
+        manualTyreStock.push({ id: Date.now(), date, tyre, veh, status, remark, source: 'Manual Add' });
+        
+        if (tyre && !masteredTyres.includes(tyre)) masteredTyres.push(tyre);
+        if (veh && !masteredVehicles.includes(veh)) masteredVehicles.push(veh);
+        if (status && !masteredTyreStatuses.includes(status)) masteredTyreStatuses.push(status);
+        
+        tyreEl.value = ""; vehEl.value = ""; statEl.value = ""; remEl.value = "";
+        document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = "none");
+        
+        saveDatabase();
+        renderTyreStock();
+        tyreEl.focus();
+        showToast('Stock manually added.');
+    }
+
+    function setTyreState(tyre, state) {
+        tyreOverrides[tyre] = state;
+        saveDatabase();
+        renderTyreStock();
+        showToast('Tyre status updated.');
+    }
+    
+    function deleteManualStockByTyre(tyre) {
+        if(confirm("Delete this manual stock entry permanently?")) {
+            manualTyreStock = manualTyreStock.filter(m => m.tyre !== tyre);
+            delete tyreOverrides[tyre];
+            saveDatabase();
+            renderTyreStock();
+            showToast('Manual stock deleted.');
+        }
+    }
+
+    function renderTyreStock() {
+        let tyreLatest = {};
+        
+        const rows = document.querySelectorAll('#tyreTableBody tr');
+        rows.forEach(tr => {
+            const cells = tr.querySelectorAll('td');
+            if(cells.length >= 13) {
+                const date = cells[0].innerText.trim();
+                const veh = cells[1].innerText.trim();
+                const newTyre = cells[4].innerText.trim();
+                const oldTyre = cells[6].innerText.trim();
+                const billStatus = cells[10].innerText.trim();
+                const remark = cells[11].innerText.trim();
+
+                if (newTyre && newTyre !== '-' && newTyre.toUpperCase() !== 'NULL' && !tyreLatest[newTyre]) {
+                    tyreLatest[newTyre] = { loc: 'truck' }; 
+                }
+                if (oldTyre && oldTyre !== '-' && oldTyre.toUpperCase() !== 'MISSING' && !tyreLatest[oldTyre]) {
+                    tyreLatest[oldTyre] = { loc: 'godown', date, veh, status: billStatus, remark, source: 'Auto (Bill)' };
+                }
+            }
+        });
+
+        let sortedManual = [...manualTyreStock].sort((a, b) => parseD(b.date) - parseD(a.date));
+        sortedManual.forEach(m => {
+            if (!tyreLatest[m.tyre]) {
+                tyreLatest[m.tyre] = { loc: 'godown', date: m.date, veh: m.veh, status: m.status, remark: m.remark, source: 'Manual Add' };
+            }
+        });
+
+        let godownList = [];
+        let cReady = 0, cAction = 0, cDead = 0;
+
+        for (let t in tyreLatest) {
+            let data = tyreLatest[t];
+            if (data.loc === 'godown') {
+                let fs = (tyreOverrides[t] || data.status || 'UNKNOWN').toUpperCase();
+                data.finalStatus = fs;
+
+                // NEW: FIXING THE BUCKET LOGIC FOR PROPER CLASSIFICATION
+                if (fs.includes('READY') || fs.includes('NEW') || (fs.includes('GODOWN') && !fs.includes('SCRAP'))) { 
+                    data.bucket = 'ready'; cReady++; 
+                }
+                else if (fs.includes('SCRAP') || fs.includes('SOLD') || fs.includes('DEAD')) { 
+                    data.bucket = 'dead'; cDead++; 
+                }
+                else { 
+                    data.bucket = 'action'; cAction++; 
+                }
+                
+                godownList.push({ tyre: t, ...data });
+            }
+        }
+        
+        godownList.sort((a, b) => parseD(b.date) - parseD(a.date));
+
+        let html = '';
+        godownList.forEach(item => {
+            let actionHtml = '';
+            let safeTyre = item.tyre.replace(/'/g, "\\'");
+            let fsCheck = item.finalStatus;
+            
+            // NEW: DYNAMIC ACTION BUTTON GENERATION BASED ON BUCKETS
+            if (fsCheck.includes('SOLD')) {
+                // No action
+            } else if (fsCheck.includes('VENDOR') || fsCheck === 'REMOLD') {
+                actionHtml += `<button class="btn-detail" style="background:var(--success);" onclick="setTyreState('${safeTyre}', 'READY (REMOLDED)')">Receive Remold</button>`;
+            } else if (fsCheck.includes('SCRAP')) {
+                actionHtml += `<button class="btn-edit" style="background:var(--success);" onclick="setTyreState('${safeTyre}', 'SOLD')">Mark Sold</button>`;
+                actionHtml += `<button class="btn-detail" onclick="setTyreState('${safeTyre}', 'AT VENDOR (REMOLD)')">Send to Remold</button>`;
+            } else {
+                actionHtml += `<button class="btn-detail" onclick="setTyreState('${safeTyre}', 'AT VENDOR (REMOLD)')">Send to Remold</button>`;
+                actionHtml += `<button class="btn-edit" style="background:#ef4444; margin-left:4px;" onclick="setTyreState('${safeTyre}', 'SCRAP IN GODOWN')">Scrap</button>`;
+                if (!fsCheck.includes('READY') && !fsCheck.includes('GODOWN') && !fsCheck.includes('NEW')) {
+                    actionHtml += `<button class="btn-edit" style="background:var(--success); margin-left:4px;" onclick="setTyreState('${safeTyre}', 'IN GODOWN')">Ready in Godown</button>`;
+                }
+            }
+
+            let delBtn = item.source === 'Manual Add' ? `<button tabindex="-1" onclick="deleteManualStockByTyre('${safeTyre}')" style="color:red; cursor:pointer; border:none; background:none; font-weight:bold; margin-left:10px;">X</button>` : '';
+
+            let statusBadge = `<span style="padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; background: #e2e8f0; color: #334155;">${item.finalStatus}</span>`;
+            if(item.bucket === 'ready') statusBadge = `<span style="padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; background: #dcfce7; color: #059669;">${item.finalStatus}</span>`;
+            if(item.bucket === 'dead') statusBadge = `<span style="padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; background: #fee2e2; color: #ef4444;">${item.finalStatus}</span>`;
+            if(item.bucket === 'action') statusBadge = `<span style="padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; background: #fef3c7; color: #d97706;">${item.finalStatus}</span>`;
+
+            html += `<tr>
+                <td>${item.date}</td>
+                <td style="font-weight:bold; color:var(--primary);">${item.tyre}</td>
+                <td>${item.veh || '-'}</td>
+                <td>${statusBadge}</td>
+                <td>${item.remark || '-'}</td>
+                <td style="font-size:10px; color:#64748b;">${item.source}</td>
+                <td>${actionHtml} ${delBtn}</td>
+            </tr>`;
+        });
+
+        const tb = document.getElementById('stockTableBody');
+        if(tb) {
+            tb.innerHTML = html;
+            document.getElementById('stockReady').innerText = cReady;
+            document.getElementById('stockAction').innerText = cAction;
+            document.getElementById('stockDead').innerText = cDead;
+            document.getElementById('stockTotal').innerText = cReady + cAction + cDead;
+        }
     }
 
     function toggleSuggest(inputId, listType) {
@@ -914,7 +1169,7 @@
                 veh: currentExportType === 'inv' ? cells[3]?.innerText.trim() : cells[1]?.innerText.trim(),
                 party: currentExportType === 'inv' ? cells[5]?.innerText.trim() : cells[3]?.innerText.trim(),
                 prod: currentExportType === 'inv' ? cells[4]?.innerText.trim() : "",
-                status: currentExportType === 'inv' ? cells[7]?.innerText.trim() : cells[9]?.innerText.trim()
+                status: currentExportType === 'inv' ? cells[7]?.innerText.trim() : cells[10]?.innerText.trim() 
             };
 
             let pass = true;
@@ -1078,7 +1333,7 @@
                 
                 let html = `<td class="sr-cell" style="font-weight:bold; color:#64748b;"></td><td contenteditable="true">${date}</td><td contenteditable="true">${bill}</td><td contenteditable="true" style="color:var(--primary); font-weight:bold;">${veh || '-'}</td><td contenteditable="true">${item.prod}</td><td contenteditable="true" class="party-cell">${party}</td><td contenteditable="true">${item.netTotal.toFixed(2)}</td><td contenteditable="true">${finalStatus}</td>`;
                 document.querySelectorAll('.custom-in-perm').forEach(i => { html += `<td contenteditable="true">${i.value}</td>`; });
-                html += `<td><button tabindex="-1" onclick="this.parentElement.parentElement.remove(); saveDatabase(); updateSerialNumbers(); showToast('Entry Deleted.');" style="color:red; cursor:pointer; border:none; background:none; font-weight:bold;">X</button></td>`;
+                html += `<td><button tabindex="-1" onclick="this.parentElement.parentElement.remove(); saveDatabase(); updateSerialNumbers(); showToast('Entry Deleted.'); renderDashboard();" style="color:red; cursor:pointer; border:none; background:none; font-weight:bold;">X</button></td>`;
                 row.innerHTML = html;
             });
 
@@ -1088,20 +1343,27 @@
             currentInvoiceItems = []; renderMiniTable(); 
             healTableAlignment(); 
             if(dateEl) dateEl.focus();
+            renderDashboard();
         } catch (error) { console.error("Save Error:", error); }
     }
 
     function addTyreItem() {
         const nTyreEl = document.getElementById('tNewTyre'); const nKMEl = document.getElementById('tNewKM'); const oTyreEl = document.getElementById('tOldTyre');
-        const oKMEl = document.getElementById('tOldKM'); const runKMEl = document.getElementById('tRunKM'); const statusEl = document.getElementById('tStatus'); const remarkEl = document.getElementById('tRemark');
+        const oKMEl = document.getElementById('tOldKM'); const runKMEl = document.getElementById('tRunKM'); 
+        const daysEl = document.getElementById('tDays'); 
+        const statusEl = document.getElementById('tStatus'); const remarkEl = document.getElementById('tRemark');
 
         const nTyre = nTyreEl ? nTyreEl.value.toUpperCase().trim() : ""; const nKM = nKMEl ? nKMEl.value.trim() : ""; const oTyre = oTyreEl ? oTyreEl.value.toUpperCase().trim() : "";
-        const oKM = oKMEl ? oKMEl.value.trim() : ""; const runKM = runKMEl ? runKMEl.value.trim() : ""; const status = statusEl ? statusEl.value.toUpperCase().trim() : ""; const remark = remarkEl ? remarkEl.value.trim() : "";
+        const oKM = oKMEl ? oKMEl.value.trim() : ""; const runKM = runKMEl ? runKMEl.value.trim() : ""; 
+        const days = daysEl ? daysEl.value.trim() : ""; 
+        const status = statusEl ? statusEl.value.toUpperCase().trim() : ""; const remark = remarkEl ? remarkEl.value.trim() : "";
 
         if (!nTyre && !oTyre && !status) { alert("Please enter tyre details to add."); return false; }
-        currentTyreItems.push({ id: Date.now(), nTyre, nKM, oTyre, oKM, runKM, status, remark });
+        currentTyreItems.push({ id: Date.now(), nTyre, nKM, oTyre, oKM, runKM, days, status, remark });
 
-        if(nTyreEl) nTyreEl.value = ""; if(nKMEl) nKMEl.value = ""; if(oTyreEl) oTyreEl.value = ""; if(oKMEl) oKMEl.value = ""; if(runKMEl) runKMEl.value = ""; if(statusEl) statusEl.value = ""; if(remarkEl) remarkEl.value = "";
+        if(nTyreEl) nTyreEl.value = ""; if(nKMEl) nKMEl.value = ""; if(oTyreEl) oTyreEl.value = ""; if(oKMEl) oKMEl.value = ""; if(runKMEl) runKMEl.value = ""; 
+        if(daysEl) daysEl.value = ""; 
+        if(statusEl) statusEl.value = ""; if(remarkEl) remarkEl.value = "";
         document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = "none");
         renderTyreMiniTable(); if(nTyreEl) nTyreEl.focus(); return true;
     }
@@ -1111,7 +1373,7 @@
     function renderTyreMiniTable() {
         const tbody = document.getElementById('tyreMiniTableBody'); tbody.innerHTML = "";
         currentTyreItems.forEach(item => {
-            tbody.innerHTML += `<tr><td>${item.nTyre||'-'}</td><td>${item.nKM||'-'}</td><td>${item.oTyre||'-'}</td><td>${item.oKM||'-'}</td><td style="color:var(--accent); font-weight:bold;">${item.runKM||'-'}</td><td>${item.status||'-'}</td><td>${item.remark||'-'}</td><td><button tabindex="-1" onclick="removeTyreItem(${item.id})" style="color:red; cursor:pointer; border:none; background:none; font-weight:bold;">✖</button></td></tr>`;
+            tbody.innerHTML += `<tr><td>${item.nTyre||'-'}</td><td>${item.nKM||'-'}</td><td>${item.oTyre||'-'}</td><td>${item.oKM||'-'}</td><td style="color:var(--accent); font-weight:bold;">${item.runKM||'-'}</td><td style="color:var(--warning); font-weight:bold;">${item.days||'-'}</td><td>${item.status||'-'}</td><td>${item.remark||'-'}</td><td><button tabindex="-1" onclick="removeTyreItem(${item.id})" style="color:red; cursor:pointer; border:none; background:none; font-weight:bold;">✖</button></td></tr>`;
         });
     }
 
@@ -1132,11 +1394,15 @@
                 if (item.nTyre && !masteredTyres.includes(item.nTyre)) masteredTyres.push(item.nTyre);
                 if (item.oTyre && !masteredTyres.includes(item.oTyre)) masteredTyres.push(item.oTyre);
                 if (item.status && !masteredTyreStatuses.includes(item.status)) masteredTyreStatuses.push(item.status);
+                
+                if (item.nTyre && tyreOverrides[item.nTyre]) delete tyreOverrides[item.nTyre];
+
                 const row = mainBody.insertRow(0);
-                row.innerHTML = `<td contenteditable="true">${date}</td><td contenteditable="true" style="font-weight:bold; color:var(--primary);">${veh}</td><td contenteditable="true">${inv}</td><td contenteditable="true">${party}</td><td contenteditable="true">${item.nTyre||'-'}</td><td contenteditable="true">${item.nKM||'-'}</td><td contenteditable="true">${item.oTyre||'-'}</td><td contenteditable="true">${item.oKM||'-'}</td><td contenteditable="true" style="color:var(--accent); font-weight:bold;">${item.runKM||'-'}</td><td contenteditable="true">${item.status||'-'}</td><td contenteditable="true">${item.remark||'-'}</td><td><button tabindex="-1" onclick="this.parentElement.parentElement.remove(); saveDatabase(); showToast('Entry Deleted.');" style="color:red; cursor:pointer; border:none; background:none; font-weight:bold;">X</button></td>`;
+                row.innerHTML = `<td contenteditable="true">${date}</td><td contenteditable="true" style="font-weight:bold; color:var(--primary);">${veh}</td><td contenteditable="true">${inv}</td><td contenteditable="true">${party}</td><td contenteditable="true">${item.nTyre||'-'}</td><td contenteditable="true">${item.nKM||'-'}</td><td contenteditable="true">${item.oTyre||'-'}</td><td contenteditable="true">${item.oKM||'-'}</td><td contenteditable="true" style="color:var(--accent); font-weight:bold;">${item.runKM||'-'}</td><td contenteditable="true" style="color:var(--warning); font-weight:bold;">${item.days||'-'}</td><td contenteditable="true">${item.status||'-'}</td><td contenteditable="true">${item.remark||'-'}</td><td><button tabindex="-1" onclick="this.parentElement.parentElement.remove(); saveDatabase(); showToast('Entry Deleted.'); renderTyreStock();" style="color:red; cursor:pointer; border:none; background:none; font-weight:bold;">X</button></td>`;
             });
             if(invEl) invEl.value = ""; 
             currentTyreItems = []; renderTyreMiniTable(); healTableAlignment(); if(dateEl) dateEl.focus();
+            renderTyreStock(); 
         } catch (error) { console.error("Save Tyre Error:", error); }
     }
     
@@ -1169,9 +1435,93 @@
         input.parentElement.querySelector('.suggestion-box').style.display = "none";
         focusNextField(input);
     }
-    
+
+    // --- REAL-TIME TABLE EDITING ENGINE ---
+    function handleTdSuggest(cell) {
+        let listType = null;
+        const tableId = cell.closest('tbody').id;
+        const colIdx = Array.from(cell.parentElement.children).indexOf(cell);
+
+        if (tableId === 'tableBody') {
+            if (colIdx === 3) listType = 'vehicle';
+            else if (colIdx === 4) listType = 'product';
+            else if (colIdx === 5) listType = 'party';
+            else if (colIdx === 7) listType = 'status';
+        } else if (tableId === 'tyreTableBody') {
+            if (colIdx === 1) listType = 'vehicle';
+            else if (colIdx === 3) listType = 'party';
+            else if (colIdx === 4 || colIdx === 6) listType = 'tyre';
+            else if (colIdx === 10) listType = 'tyreStatus';
+        }
+
+        const box = document.getElementById('tdSuggestBox');
+        if (!listType) { box.style.display = 'none'; return; }
+
+        let list = [];
+        if (listType === 'product') list = masteredProducts;
+        else if (listType === 'party') list = Object.keys(partyMaster);
+        else if (listType === 'status') list = masteredStatuses;
+        else if (listType === 'vehicle') list = masteredVehicles;
+        else if (listType === 'tyreStatus') list = masteredTyreStatuses;
+        else if (listType === 'tyre') list = masteredTyres;
+
+        const val = cell.innerText.toUpperCase().trim();
+        const matches = val ? list.filter(item => item.toUpperCase().includes(val)) : list;
+
+        if (matches.length > 0) {
+            box.innerHTML = matches.map(item => `<div class="suggestion-item" onclick="selectTdSuggest('${item.replace(/'/g, "\\'")}')">${item}</div>`).join('');
+            const rect = cell.getBoundingClientRect();
+            box.style.top = (rect.bottom + window.scrollY) + 'px';
+            box.style.left = (rect.left + window.scrollX) + 'px';
+            box.style.width = Math.max(rect.width, 150) + 'px';
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+        }
+    }
+
+    function selectTdSuggest(val) {
+        if(currentEditingCell) {
+            currentEditingCell.innerText = val;
+            placeCaretAtEnd(currentEditingCell);
+            saveTableEdit(currentEditingCell);
+        }
+        document.getElementById('tdSuggestBox').style.display = 'none';
+    }
+
+    function saveTableEdit(cell) {
+        const val = cell.innerText.toUpperCase().trim();
+        const tbody = cell.closest('tbody');
+        const colIdx = Array.from(cell.parentElement.children).indexOf(cell);
+        
+        if (val && val !== '-' && val !== 'NULL' && val !== 'MISSING') {
+            if (tbody.id === 'tableBody') {
+                if (colIdx === 3 && !masteredVehicles.includes(val)) masteredVehicles.push(val);
+                if (colIdx === 4 && !masteredProducts.includes(val)) masteredProducts.push(val);
+                if (colIdx === 5) registerParty(val);
+                if (colIdx === 7 && !masteredStatuses.includes(val)) masteredStatuses.push(val);
+            } else if (tbody.id === 'tyreTableBody') {
+                if (colIdx === 1 && !masteredVehicles.includes(val)) masteredVehicles.push(val);
+                if (colIdx === 3) registerParty(val);
+                if ((colIdx === 4 || colIdx === 6) && !masteredTyres.includes(val)) masteredTyres.push(val);
+                if (colIdx === 10 && !masteredTyreStatuses.includes(val)) masteredTyreStatuses.push(val);
+            }
+        }
+        
+        saveDatabase();
+        if (tbody.id === 'tableBody') renderDashboard();
+        if (tbody.id === 'tyreTableBody') renderTyreStock();
+        renderPartyFullList(); 
+    }
+
+    function stopEditing(cell) {
+        cell.classList.remove('is-editing');
+        document.getElementById('tdSuggestBox').style.display = 'none';
+        currentEditingCell = null;
+    }
+
     window.addEventListener('click', (e) => { 
-        if (!e.target.matches('input') && !e.target.matches('.dropdown-icon') && !e.target.classList.contains('suggestion-item')) {
+        if (!e.target.matches('input') && !e.target.matches('.dropdown-icon') && !e.target.classList.contains('suggestion-item') && !e.target.matches('td')) {
             document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = "none"); 
         }
         if (!e.target.matches('.dot-btn')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show-dropdown'));
@@ -1187,13 +1537,29 @@
 
     document.addEventListener('dblclick', (e) => {
         if (e.target.tagName === 'TD' && e.target.getAttribute('contenteditable') === 'true') {
-            e.target.classList.add('is-editing'); placeCaretAtEnd(e.target);
+            e.target.classList.add('is-editing'); 
+            currentEditingCell = e.target;
+            placeCaretAtEnd(e.target);
+            handleTdSuggest(e.target);
         }
     });
 
     document.addEventListener('focusout', (e) => {
         if (e.target.tagName === 'TD' && e.target.classList.contains('is-editing')) {
-            e.target.classList.remove('is-editing'); saveDatabase();
+            setTimeout(() => {
+                if(currentEditingCell === e.target) {
+                    stopEditing(e.target);
+                    saveTableEdit(e.target);
+                }
+            }, 150);
+        }
+    });
+
+    document.addEventListener('keyup', e => {
+        if (e.target.tagName === 'TD' && e.target.classList.contains('is-editing')) {
+            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape'].includes(e.key)) {
+                handleTdSuggest(e.target);
+            }
         }
     });
 
@@ -1235,7 +1601,22 @@
             const items = openBox.querySelectorAll('.suggestion-item'); let activeIdx = Array.from(items).findIndex(i => i.classList.contains('active'));
             if (e.key === 'ArrowDown') { e.preventDefault(); if (activeIdx < items.length - 1) { if (activeIdx > -1) items[activeIdx].classList.remove('active'); items[activeIdx + 1].classList.add('active'); items[activeIdx + 1].scrollIntoView({ block: "nearest" }); } else if (activeIdx === -1 && items.length > 0) items[0].classList.add('active'); return; }
             if (e.key === 'ArrowUp') { e.preventDefault(); if (activeIdx > 0) { items[activeIdx].classList.remove('active'); items[activeIdx - 1].classList.add('active'); items[activeIdx - 1].scrollIntoView({ block: "nearest" }); } return; }
-            if (e.key === 'Enter') { e.preventDefault(); if (activeIdx > -1) items[activeIdx].click(); else { openBox.style.display = "none"; focusNextField(e.target); } return; }
+            if (e.key === 'Enter') { 
+                e.preventDefault(); 
+                if (activeIdx > -1) {
+                    items[activeIdx].click(); 
+                } else { 
+                    openBox.style.display = "none"; 
+                    if (e.target.tagName !== 'TD') {
+                        focusNextField(e.target); 
+                    } else {
+                        stopEditing(e.target);
+                        saveTableEdit(e.target);
+                        navigateTable(e.target, 'ArrowDown');
+                    }
+                } 
+                return; 
+            }
         }
 
         if (document.getElementById('exportModal').style.display === 'flex' && e.key === 'Enter') {
@@ -1254,13 +1635,40 @@
             const cell = e.target;
             if (!cell.classList.contains('is-editing')) {
                 if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); navigateTable(cell, e.key); return; }
-                if (e.key === 'Enter' || e.key === 'F2') { e.preventDefault(); cell.classList.add('is-editing'); placeCaretAtEnd(cell); return; }
-                if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); cell.innerText = ''; saveDatabase(); return; }
-                if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { cell.classList.add('is-editing'); cell.innerText = ''; return; }
+                if (e.key === 'Enter' || e.key === 'F2') { 
+                    e.preventDefault(); 
+                    cell.classList.add('is-editing'); 
+                    currentEditingCell = cell;
+                    placeCaretAtEnd(cell); 
+                    handleTdSuggest(cell);
+                    return; 
+                }
+                if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); cell.innerText = ''; saveTableEdit(cell); return; }
+                if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { 
+                    cell.classList.add('is-editing'); 
+                    currentEditingCell = cell;
+                    cell.innerText = ''; 
+                    return; 
+                }
             } else {
-                if (e.key === 'Enter') { e.preventDefault(); cell.classList.remove('is-editing'); saveDatabase(); navigateTable(cell, 'ArrowDown'); return; }
-                if (['ArrowUp', 'ArrowDown'].includes(e.key)) { cell.classList.remove('is-editing'); saveDatabase(); navigateTable(cell, e.key); return; }
-                if (e.key === 'F2' || e.key === 'Escape') { e.preventDefault(); cell.classList.remove('is-editing'); return; }
+                if (e.key === 'Enter') { 
+                    e.preventDefault(); 
+                    stopEditing(cell); 
+                    saveTableEdit(cell); 
+                    navigateTable(cell, 'ArrowDown'); 
+                    return; 
+                }
+                if (['ArrowUp', 'ArrowDown'].includes(e.key)) { 
+                    stopEditing(cell); 
+                    saveTableEdit(cell); 
+                    navigateTable(cell, e.key); 
+                    return; 
+                }
+                if (e.key === 'F2' || e.key === 'Escape') { 
+                    e.preventDefault(); 
+                    stopEditing(cell); 
+                    return; 
+                }
                 return; 
             }
         }
@@ -1287,67 +1695,18 @@
         }
     });
 
-    // --- GLOBAL SHORTCUTS ENGINE ---
-    window.addEventListener('keydown', function(e) {
-        if (e.altKey && e.key === '1') { e.preventDefault(); switchToInventoryView(); }
-        if (e.altKey && e.key === '2') { e.preventDefault(); switchToTyreView(); }
-        if (e.altKey && e.key === '3') { e.preventDefault(); switchToDashboardView(); }
-        if (e.altKey && e.key === '4') { e.preventDefault(); switchToPartyView(); }
-        if (e.altKey && e.key === '5') { e.preventDefault(); switchToAllBillsView(); }
-        if (e.altKey && e.key === '6') { e.preventDefault(); switchToAllTyresView(); }
-        
-        if (e.altKey && e.key.toLowerCase() === 'e') { 
-            e.preventDefault(); 
-            const activeView = document.querySelector('.app-container[style*="display: block"]');
-            if(activeView && (activeView.id === 'inventoryView' || activeView.id === 'allBillsView')) openExportModal('inv');
-            else if(activeView && (activeView.id === 'tyreView' || activeView.id === 'allTyresView')) openExportModal('tyre');
-        }
-        
-        if (e.altKey && e.key.toLowerCase() === 's') { 
-            e.preventDefault(); 
-            const activeView = document.querySelector('.app-container[style*="display: block"]');
-            if(activeView && activeView.id === 'inventoryView') saveFullInvoice(); 
-            else if(activeView && activeView.id === 'tyreView') saveFullTyreEntry();
-        }
-        
-        if (e.altKey && e.key.toLowerCase() === 'd') { 
-            e.preventDefault(); 
-            const activeView = document.querySelector('.app-container[style*="display: block"]');
-            if(activeView && activeView.id === 'inventoryView') document.getElementById('invDate').focus();
-            else if(activeView && activeView.id === 'tyreView') document.getElementById('tDate').focus();
-        }
-        
-        if (e.altKey && e.key.toLowerCase() === 'p') { 
-            e.preventDefault(); 
-            const activeView = document.querySelector('.app-container[style*="display: block"]');
-            if(activeView && activeView.id === 'inventoryView') document.getElementById('pParty').focus();
-            else if(activeView && activeView.id === 'tyreView') document.getElementById('tParty').focus();
-        }
-        
-        if (e.key === 'Escape') {
-            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-            document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = 'none');
-            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show-dropdown'));
-            document.getElementById('confirmDeleteModal').style.display = 'none';
-            document.getElementById('renameHeadingModal').style.display = 'none';
-            
-            const editingCell = document.querySelector('td.is-editing');
-            if (editingCell) {
-                editingCell.classList.remove('is-editing');
-                editingCell.blur();
-                editingCell.focus();
-            }
-        }
-    });
-
     function focusNextField(currentEl) {
         const container = currentEl.closest('.app-container'); if(!container) return;
+        
         if (currentEl.id === 'pParty') { document.getElementById('pName').focus(); return; }
         if (currentEl.id === 'tParty') { document.getElementById('tNewTyre').focus(); return; }
         if (currentEl.id === 'status' && container.id === 'inventoryView') { addInvoiceItem(); return; }
         if (currentEl.id === 'btnAddItem') { addInvoiceItem(); return; }
         if (currentEl.id === 'tRemark' && container.id === 'tyreView') { addTyreItem(); return; }
         if (currentEl.id === 'btnAddTyreItem') { addTyreItem(); return; }
+        
+        if (currentEl.id === 'stkRemark') { addManualStock(); return; }
+        if (currentEl.id === 'btnAddStock') { addManualStock(); return; }
 
         const inputs = Array.from(container.querySelectorAll('input:not([type="date"], .custom-in-temp, [tabindex="-1"], #tRunKM, .tbl-filter), select, button.btn-save-invoice, button.btn-add-item'));
         const idx = inputs.indexOf(currentEl);
@@ -1355,196 +1714,6 @@
         if (currentEl.id === 'saveInvoiceBtn') { saveFullInvoice(); } 
         else if (currentEl.id === 'saveTyreBtn') { saveFullTyreEntry(); } 
         else if (idx > -1 && idx < inputs.length - 1) { inputs[idx + 1].focus(); }
-    }
-
-    function syncDate(picker, textId) { let d = new Date(picker.value); if(!isNaN(d)) document.getElementById(textId).value = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; }
-    function formatDate(i) { let p = i.value.split(/[-/]/); if (p.length === 3) { let y = p[2].length === 2 ? "20" + p[2] : p[2]; i.value = `${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}-${y}`; } }
-
-    function openHeadingModal() { document.getElementById('headingModal').style.display='flex'; document.getElementById('newHeadingName').value=''; document.getElementById('newHeadingName').focus(); }
-
-    function executeAddHeading() {
-        const name = document.getElementById('newHeadingName').value.trim(); const type = document.getElementById('newHeadingType').value; if (!name) return;
-        const fieldId = "customField_" + Date.now(); const newHeading = { id: fieldId, name: name, type: type };
-        customHeadings.push(newHeading); saveDatabase(); renderHeading(newHeading, true); document.getElementById('headingModal').style.display = 'none';
-    }
-
-    function renderHeading(h, isNew = false) {
-        const div = document.createElement("div"); div.className = "input-group"; div.id = "group_" + h.id;
-        const safeName = h.name.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        
-        if (h.type === 'perm') {
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><label id="lbl_${h.id}">${safeName}</label></div><input type="search" class="custom-in-perm" id="${h.id}" autocomplete="off">`;
-            document.getElementById('headerGrid').querySelector('.form-grid').appendChild(div);
-            
-            if (!document.getElementById("th_" + h.id)) { 
-                const th = document.createElement("th"); th.id = "th_" + h.id; 
-                th.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:3px;">
-                                    <div ondblclick="renameHeading('${h.id}')" id="hname_${h.id}" style="color:var(--primary); font-weight:bold; cursor:pointer; text-decoration: underline dashed #cbd5e1; text-underline-offset: 3px;" title="Double-click to rename column">${safeName}</div>
-                                    <button tabindex="-1" style="background:#fee2e2; color:#ef4444; border:none; font-size:10px; font-weight:bold; cursor:pointer; padding:4px 8px; border-radius:4px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);" onclick="removePermanent('${h.id}')">🗑️ Delete</button>
-                                </div>
-                                <div class="filter-wrap" style="position:relative;">
-                                    <input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tableBody', event); filterMainTable()" onfocus="handleFilterSuggest(this, 'tableBody', event)">
-                                    <div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div>
-                                </div>`;
-                
-                const headRow = document.querySelector('#tableHead tr'); 
-                headRow.insertBefore(th, headRow.lastElementChild); 
-                
-                if(isNew) { healTableAlignment(); }
-            }
-        } else {
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><label>${safeName} <span style="color:var(--warning); font-size:11px;">(Temp)</span></label></div><input type="search" class="custom-in-temp" data-label="${safeName}" autocomplete="off">`;
-            document.getElementById('headerGrid').querySelector('.form-grid').appendChild(div);
-        }
-    }
-
-    function renameHeading(id) {
-        const h = customHeadings.find(x => x.id === id);
-        if(!h) return;
-        columnToRenameId = id;
-        document.getElementById('renameHeadingInput').value = h.name;
-        document.getElementById('renameHeadingModal').style.display = 'flex';
-        document.getElementById('renameHeadingInput').focus();
-    }
-
-    function executeRenameHeading() {
-        if(!columnToRenameId) return;
-        const id = columnToRenameId;
-        const h = customHeadings.find(x => x.id === id);
-        const newName = document.getElementById('renameHeadingInput').value.trim();
-        if(newName && newName !== "") {
-            h.name = newName;
-            const nameDiv = document.getElementById('hname_' + id);
-            if(nameDiv) nameDiv.innerText = h.name;
-            const lblDiv = document.getElementById('lbl_' + id);
-            if(lblDiv) lblDiv.innerText = h.name;
-            saveDatabase();
-        }
-        document.getElementById('renameHeadingModal').style.display = 'none';
-        columnToRenameId = null;
-    }
-
-    function removePermanent(fieldId) { 
-        const h = customHeadings.find(x => x.id === fieldId);
-        if(!h) return;
-        columnToDeleteId = fieldId;
-        document.getElementById('confirmDeleteText').innerText = `Are you sure you want to permanently delete the "${h.name}" column and all of its data?`;
-        document.getElementById('confirmDeleteModal').style.display = 'flex';
-    }
-
-    function executeRemovePermanent() {
-        if(!columnToDeleteId) return;
-        const fieldId = columnToDeleteId;
-        const group = document.getElementById('group_' + fieldId); if(group) group.remove(); 
-        const th = document.getElementById('th_' + fieldId); 
-        if(th) { 
-            const colIdx = Array.from(th.parentNode.children).indexOf(th); th.remove(); 
-            document.querySelectorAll('#tableBody tr').forEach(row => { if (row.children[colIdx]) row.children[colIdx].remove(); });
-        } 
-        customHeadings = customHeadings.filter(x => x.id !== fieldId); 
-        healTableAlignment(); 
-        saveDatabase();
-        document.getElementById('confirmDeleteModal').style.display = 'none';
-        columnToDeleteId = null;
-        showToast('Column Deleted.');
-    }
-
-    function registerParty(partyName) {
-        const name = partyName.toUpperCase().trim(); if(typeof partyMaster !== 'object' || partyMaster === null) partyMaster = {};
-        if (name && !partyMaster[name]) partyMaster[name] = { dateAdded: Date.now(), details: {} };
-    }
-    
-    function renderPartyFullList() {
-        const container = document.getElementById('partyListContainer'); const searchTerm = document.getElementById('partySearch')?.value.toUpperCase() || ""; container.innerHTML = "";
-        let partyKeys = Object.keys(partyMaster); if (searchTerm) partyKeys = partyKeys.filter(p => p.includes(searchTerm));
-        if (partyKeys.length === 0) { container.innerHTML = "<p class='empty-state'>No parties found.</p>"; return; }
-        partyKeys.sort((a, b) => partyMaster[b].dateAdded - partyMaster[a].dateAdded);
-        partyKeys.forEach(party => {
-            let customFieldsHTML = ""; const details = partyMaster[party].details || {}; 
-            if (Object.keys(details).length === 0) customFieldsHTML = "<p style='font-style:italic; font-size:12px; margin:0;'>No custom details added yet.</p>"; 
-            else for (let key in details) customFieldsHTML += `<div class="detail-item"><span class="detail-key">${key}:</span><span>${details[key]}</span></div>`; 
-            const safeParty = party.replace(/'/g, "\\'");
-            container.innerHTML += `<div class="party-card"><div class="party-header"><div class="party-name">${party}</div><div class="party-actions"><button class="btn-edit" onclick="openRenameModal('${safeParty}')">✏️ Edit</button><button class="btn-detail" onclick="openDetailModal('${safeParty}')">+ Add Detail</button></div></div><div class="party-details">${customFieldsHTML}</div></div>`;
-        });
-    }
-    
-    function handleModalSave() { if(typeof currentModalAction === 'function') currentModalAction(); }
-    function closeActionModal() { document.getElementById('actionModal').style.display = "none"; document.getElementById('renameSection').style.display = "none"; document.getElementById('detailSection').style.display = "none"; }
-    function openRenameModal(party) { currentEditingParty = party; document.getElementById('actionModalTitle').innerText = "Rename Party"; document.getElementById('renameSection').style.display = "block"; document.getElementById('newPartyNameInput').value = party; currentModalAction = executeRename; document.getElementById('actionModal').style.display = "flex"; document.getElementById('newPartyNameInput').focus(); }
-    function executeRename() { const newName = document.getElementById('newPartyNameInput').value.toUpperCase().trim(); if (!newName || newName === currentEditingParty) { closeActionModal(); return; } document.querySelectorAll('.party-cell').forEach(cell => { if (cell.innerText.trim().toUpperCase() === currentEditingParty) cell.innerText = newName; }); partyMaster[newName] = partyMaster[currentEditingParty]; delete partyMaster[currentEditingParty]; saveDatabase(); closeActionModal(); renderPartyFullList(); }
-    
-    function openDetailModal(party) { 
-        currentEditingParty = party; document.getElementById('actionModalTitle').innerText = "Add Detail for " + party; document.getElementById('detailSection').style.display = "block"; 
-        document.getElementById('detailHeadingInput').value = ""; document.getElementById('detailValueInput').value = ""; currentModalAction = executeAddDetail; 
-        document.getElementById('actionModal').style.display = "flex"; document.getElementById('detailHeadingInput').focus(); 
-    }
-    
-    function executeAddDetail() { 
-        const heading = document.getElementById('detailHeadingInput').value.trim(); const value = document.getElementById('detailValueInput').value.trim(); 
-        if (!heading) { document.getElementById('detailHeadingInput').focus(); return; }
-        if (!value) { document.getElementById('detailValueInput').focus(); return; }
-        if (!partyMaster[currentEditingParty].details) { partyMaster[currentEditingParty].details = {}; }
-        partyMaster[currentEditingParty].details[heading] = value; saveDatabase(); closeActionModal(); renderPartyFullList(); 
-    }
-    
-    function openAddPartyModal() { currentEditingParty = ""; document.getElementById('actionModalTitle').innerText = "Create New Party"; document.getElementById('renameSection').style.display = "block"; document.getElementById('newPartyNameInput').value = ""; currentModalAction = executeManualPartyAdd; document.getElementById('actionModal').style.display = "flex"; document.getElementById('newPartyNameInput').focus(); }
-    function executeManualPartyAdd() { const name = document.getElementById('newPartyNameInput').value.toUpperCase().trim(); if (name) { registerParty(name); saveDatabase(); renderPartyFullList(); } closeActionModal(); }
-
-    function renderDashboard() {
-        const filterText = document.getElementById('dashGlobalFilter')?.value.toUpperCase() || "";
-        const rows = document.querySelectorAll('#tableBody tr');
-        let grandTotal = 0; let billCount = 0; let partyTotals = {}; let monthTotals = {};
-        let topPartyName = "-", topPartyAmt = 0; let uniqueBills = new Set();
-
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 7) {
-                const date = cells[1].innerText.trim(); const bill = cells[2].innerText.trim();
-                const party = cells[5].innerText.toUpperCase().trim(); const total = parseFloat(cells[6].innerText.trim().replace(/,/g, '')) || 0; 
-
-                if (filterText && !party.includes(filterText)) return;
-                grandTotal += total; if(bill) uniqueBills.add(bill);
-                if (partyTotals[party]) partyTotals[party] += total; else partyTotals[party] = total;
-                if(partyTotals[party] > topPartyAmt) { topPartyAmt = partyTotals[party]; topPartyName = party; }
-
-                let monthStr = "Unknown";
-                if (date.length >= 8) { const parts = date.split(/[-/]/); if (parts.length >= 3) monthStr = `${parts[1]}-${parts[2]}`; }
-                if (monthTotals[monthStr]) monthTotals[monthStr] += total; else monthTotals[monthStr] = total;
-            }
-        });
-
-        billCount = uniqueBills.size > 0 ? uniqueBills.size : rows.length;
-
-        document.getElementById('dashMetricTotal').innerText = "₹" + grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 });
-        document.getElementById('dashMetricCount').innerText = billCount;
-        document.getElementById('dashMetricAvg').innerText = billCount > 0 ? "₹" + (grandTotal / billCount).toLocaleString('en-IN', { maximumFractionDigits: 2 }) : "₹0";
-        document.getElementById('dashMetricTopParty').innerText = topPartyName;
-
-        const partyChart = document.getElementById('dashChartParty');
-        if(partyChart) {
-            partyChart.innerHTML = "";
-            if (Object.keys(partyTotals).length === 0) { partyChart.innerHTML = "<div class='empty-state'>No data available to chart</div>"; } 
-            else {
-                let maxPartyScale = Math.max(...Object.values(partyTotals));
-                Object.entries(partyTotals).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(([party, amt]) => {
-                    let widthPercent = (amt / maxPartyScale) * 100;
-                    partyChart.innerHTML += `<div class="chart-bar-row"><div class="chart-label" title="${party}">${party}</div><div class="chart-track"><div class="chart-fill" style="width: ${widthPercent}%"></div></div><div class="chart-value">₹${amt.toLocaleString('en-IN')}</div></div>`;
-                });
-            }
-        }
-
-        const monthChart = document.getElementById('dashChartMonth');
-        if(monthChart) {
-            monthChart.innerHTML = "";
-            if (Object.keys(monthTotals).length === 0) { monthChart.innerHTML = "<div class='empty-state'>No data available to chart</div>"; } 
-            else {
-                let maxMonthScale = Math.max(...Object.values(monthTotals));
-                Object.entries(monthTotals).sort().forEach(([month, amt]) => {
-                    let widthPercent = (amt / maxMonthScale) * 100;
-                    monthChart.innerHTML += `<div class="chart-bar-row"><div class="chart-label">${month}</div><div class="chart-track"><div class="chart-fill success-bg" style="width: ${widthPercent}%"></div></div><div class="chart-value">₹${amt.toLocaleString('en-IN')}</div></div>`;
-                });
-            }
-        }
     }
 </script>
 </body>
