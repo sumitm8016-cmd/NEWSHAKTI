@@ -33,7 +33,7 @@
         .btn-icon { background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; display: flex; align-items: center; justify-content: center; height: 30px;}
         .btn-icon:hover { background: #e2e8f0; color: var(--primary); }
 
-        .dropdown-menu { display: none; position: absolute; right: 0; top: 35px; background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 6px; overflow: hidden; z-index: 1000; min-width: 200px; }
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 35px; background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 6px; overflow: hidden; z-index: 1000; min-width: 250px; }
         .dropdown-menu a { display: block; padding: 10px 15px; text-decoration: none; color: var(--primary); font-size: 13px; font-weight: 600; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
         .dropdown-menu a:hover { background: #f8fafc; color: var(--accent); border-left: 3px solid var(--accent); }
         .show-dropdown { display: block; }
@@ -278,6 +278,7 @@
             <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
             <button class="dot-btn" onclick="toggleMenu('tyreMenu')">⋮</button>
             <div id="tyreMenu" class="dropdown-menu">
+                <a onclick="openDaysCalculatorModal()">📅 Lifecycle Calculator (Alt+C)</a>
                 <a onclick="switchToAllTyresView()">📂 View All Tyres (Alt+6)</a>
                 <a onclick="switchToPartyView()">👥 Party Master Directory (Alt+4)</a>
                 <a onclick="switchToDashboardView()">📊 Purchase Dashboard (Alt+3)</a>
@@ -338,7 +339,7 @@
             <div class="input-group"><label>Old KM</label><input type="number" id="tOldKM" autocomplete="off" oninput="calcRunKM()"></div>
             <div class="input-group"><label>Run KM (Auto)</label><input type="text" id="tRunKM" autocomplete="off" readonly style="background:#eef2ff; color:var(--accent); font-weight:bold;"></div>
             
-            <div class="input-group"><label>Days Run</label><input type="number" id="tDays" autocomplete="off" placeholder="e.g. 45"></div>
+            <div class="input-group"><label>Days Run</label><input type="text" id="tDays" autocomplete="off" placeholder="e.g. 45"></div>
             
             <div class="input-group">
                 <label>Old Tyre Status</label>
@@ -497,6 +498,44 @@
     </div>
 </div>
 
+<div id="daysCalcModal" class="modal-overlay" style="z-index: 1000000;">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header">
+            <h2 style="margin: 0; font-size:16px; color:var(--primary);">⏱️ Lifecycle Duration Calculator</h2>
+        </div>
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 15px;">
+            <div class="input-group">
+                <label>Installation Date</label>
+                <div class="date-input-wrapper">
+                    <input type="search" id="calcFittedDate" placeholder="DD-MM-YY" autocomplete="off" onblur="formatDate(this)">
+                    <input type="date" onchange="syncDate(this, 'calcFittedDate')" tabindex="-1">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Dismount Date</label>
+                <div class="date-input-wrapper">
+                    <input type="search" id="calcRemovedDate" placeholder="DD-MM-YY" autocomplete="off" onblur="formatDate(this)">
+                    <input type="date" onchange="syncDate(this, 'calcRemovedDate')" tabindex="-1">
+                </div>
+            </div>
+        </div>
+        <label style="margin-bottom:15px; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:12px; font-weight:700; color:var(--accent);">
+            <input type="checkbox" id="useCurrentDateCheck" onchange="toggleCurrentDate(this)" style="width:auto; margin:0;"> 
+            Sync Dismount Date with Invoice Date
+        </label>
+        <div style="background:#eef2ff; padding:15px; border-radius:6px; border:1px solid #c7d2fe; text-align:center; margin-bottom:20px;">
+            <div style="font-size:11px; color:#64748b; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">Total Duration</div>
+            <div id="calcResultDisplay" style="font-size:16px; font-weight:800; color:var(--accent);">-</div>
+            <div id="calcResultYMD" style="font-size:12px; color:#475569; margin-top:5px; font-weight:600;">(0 Yrs, 0 Mos, 0 Days)</div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button class="btn-icon" style="color:var(--primary); border:1px solid #cbd5e1;" onclick="doCalcDays()">🔄 See Life Cycle</button>
+            <button class="close-btn" onclick="document.getElementById('daysCalcModal').style.display='none'">Cancel</button>
+            <button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="applyDaysCalc()">✔️ Apply Days</button>
+        </div>
+    </div>
+</div>
+
 <div id="exportModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 700px;">
         <div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">🖨️ Generate Report & Export</h2></div>
@@ -635,7 +674,7 @@
     </div>
 </div>
 
-<div class="shortcut-legend">Alt+1: Bills | Alt+2: Tyre | Alt+3: Dash | Alt+4: Party | Alt+5: All Bills | Alt+6: All Tyres | Alt+7: Stock | Alt+D: Date | Alt+P: Party | Alt+E: Export | Alt+S: Save | Esc: Close</div>
+<div class="shortcut-legend">Alt+1: Bills | Alt+2: Tyre | Alt+3: Dash | Alt+4: Party | Alt+5: All Bills | Alt+6: All Tyres | Alt+7: Stock | Alt+D: Date | Alt+P: Party | Alt+E: Export | Alt+S: Save | Alt+C: Calc | Esc: Close</div>
 
 <script>
     // --- GLOBAL STORAGE & DATABASE ---
@@ -1135,6 +1174,80 @@
         return new Date(y, p[1]-1, p[0]).getTime(); 
     }
 
+    // --- MODAL DAYS CALCULATOR ---
+    function openDaysCalculatorModal() {
+        document.getElementById('daysCalcModal').style.display = 'flex';
+        document.getElementById('calcFittedDate').value = '';
+        document.getElementById('calcRemovedDate').value = '';
+        document.getElementById('useCurrentDateCheck').checked = false;
+        document.getElementById('calcResultDisplay').innerText = '-';
+        document.getElementById('calcResultYMD').innerText = '(0 Yrs, 0 Mos, 0 Days)';
+        document.getElementById('calcFittedDate').focus();
+        window.tempCalcDays = null;
+    }
+
+    function toggleCurrentDate(checkbox) {
+        const removedInput = document.getElementById('calcRemovedDate');
+        if(checkbox.checked) {
+            let mainDate = document.getElementById('tDate').value;
+            if(mainDate && mainDate.trim() !== '') {
+                removedInput.value = mainDate;
+            } else {
+                let d = new Date();
+                removedInput.value = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+            }
+        } else {
+            removedInput.value = '';
+        }
+    }
+
+    function doCalcDays() {
+        const fStr = document.getElementById('calcFittedDate').value;
+        const rStr = document.getElementById('calcRemovedDate').value;
+        const display = document.getElementById('calcResultDisplay');
+        const displayYMD = document.getElementById('calcResultYMD');
+        
+        if(!fStr || !rStr) {
+            display.innerText = '-';
+            displayYMD.innerText = '(0 Yrs, 0 Mos, 0 Days)';
+            window.tempCalcDays = null;
+            return;
+        }
+
+        const fDate = parseD(fStr);
+        const rDate = parseD(rStr);
+
+        if(fDate > 0 && rDate > 0 && rDate >= fDate) {
+            const diffTime = Math.abs(rDate - fDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffHours = diffDays * 24;
+            
+            display.innerText = `${diffDays} Days and ${diffHours} Hours`;
+
+            let y = Math.floor(diffDays / 365);
+            let remainingDays = diffDays % 365;
+            let m = Math.floor(remainingDays / 30);
+            let d = remainingDays % 30;
+
+            displayYMD.innerText = `(${y} Yrs, ${m} Mos, ${d} Days)`;
+            window.tempCalcDays = diffDays;
+        } else {
+            display.innerText = 'Invalid Dates';
+            displayYMD.innerText = 'Dismount date must be after Installation date';
+            window.tempCalcDays = null;
+        }
+    }
+
+    function applyDaysCalc() {
+        if(window.tempCalcDays !== undefined && window.tempCalcDays !== null) {
+            document.getElementById('tDays').value = window.tempCalcDays;
+            document.getElementById('daysCalcModal').style.display = 'none';
+            document.getElementById('tStatus').focus();
+        } else {
+            alert("Please enter valid dates and click 'See Life Cycle' first.");
+        }
+    }
+
     function generateReport() {
         const sortVal = document.getElementById('expSort').value;
         const fromDate = parseD(document.getElementById('expDateFrom').value);
@@ -1400,8 +1513,6 @@
             renderTyreStock(); 
         } catch (error) { console.error("Save Tyre Error:", error); }
     }
-    
-    function calcRunKM() { const oldKm = parseFloat(document.getElementById('tOldKM').value)||0; const newKm = parseFloat(document.getElementById('tNewKM').value)||0; document.getElementById('tRunKM').value = (oldKm>0 && newKm>0) ? Math.abs(oldKm - newKm) : ""; }
 
     function handleSuggest(input, listType, event) {
         if(event && (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === 'Tab')) return;
@@ -1624,6 +1735,13 @@
             else if (idx === inputs.length - 1) generateReport();
             return;
         }
+
+        // NEW: MODAL ENTER KEY LOGIC
+        if (document.getElementById('daysCalcModal').style.display === 'flex' && e.key === 'Enter') {
+            e.preventDefault();
+            doCalcDays();
+            return;
+        }
         
         if (e.target.tagName === 'TD' && e.target.getAttribute('contenteditable') === 'true') {
             const cell = e.target;
@@ -1689,7 +1807,7 @@
         }
     });
 
-    // --- GLOBAL SHORTCUTS ENGINE ---
+    // --- RESTORED GLOBAL SHORTCUTS ---
     window.addEventListener('keydown', function(e) {
         if (e.altKey && e.key === '1') { e.preventDefault(); switchToInventoryView(); }
         if (e.altKey && e.key === '2') { e.preventDefault(); switchToTyreView(); }
@@ -1699,6 +1817,12 @@
         if (e.altKey && e.key === '6') { e.preventDefault(); switchToAllTyresView(); }
         if (e.altKey && e.key === '7') { e.preventDefault(); switchToTyreStock(); }
         
+        if (e.altKey && e.key.toLowerCase() === 'c') { 
+            e.preventDefault(); 
+            const activeView = document.querySelector('.app-container[style*="display: block"]');
+            if(activeView && activeView.id === 'tyreView') openDaysCalculatorModal();
+        }
+
         if (e.altKey && e.key.toLowerCase() === 'e') { 
             e.preventDefault(); 
             const activeView = document.querySelector('.app-container[style*="display: block"]');
