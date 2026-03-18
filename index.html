@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NS Logistics | Enterprise ERP</title>
+    <title>DigiFleet | Enterprise ERP</title>
     <style>
         :root { --primary: #1e293b; --accent: #3b82f6; --success: #10b981; --warning: #f59e0b; --bg: #e2e8f0; --card: #ffffff; }
         
@@ -91,10 +91,12 @@
         .main-table td[contenteditable="true"]:focus { background: #fffbeb; box-shadow: inset 0 0 0 2px var(--warning); }
         .main-table td.is-editing { cursor: text; caret-color: var(--primary); background: white !important; box-shadow: inset 0 0 0 2px var(--accent) !important; position: relative;}
         
-        .tbl-filter { width: 100%; min-width: 80px; padding: 4px 6px; font-size: 10px; margin-top: 6px; border: 1px solid #cbd5e1; border-radius: 3px; box-sizing: border-box; font-weight: normal; background: white; color: #1e293b; height: auto; cursor: text; }
-        .tbl-filter:focus { border-color: var(--accent); }
+        /* EXCEL STYLE FILTER BUTTON */
+        .tbl-filter-btn { height: 20px; font-size: 10px; width: 100%; margin-top: 4px; padding: 0; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 3px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .tbl-filter-btn:hover { background: #e2e8f0; color: var(--primary); }
+        .tbl-filter-btn.active { background: var(--warning); color: white; border-color: var(--warning); }
 
-        .limit-10 .filter-wrap { display: none !important; }
+        .limit-10 .tbl-filter-btn { display: none !important; }
         .limit-10 tbody tr:nth-child(n+11) { display: none; }
 
         .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999999;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;}
@@ -134,11 +136,32 @@
 </head>
 <body>
 
+<div id="excelFilterPopup" style="display:none; position:absolute; z-index:1000000; background:white; border:1px solid #cbd5e1; box-shadow:0 10px 25px rgba(0,0,0,0.2); border-radius:6px; width:240px; padding:10px; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: left;">
+    <div onclick="sortExcelTable('asc')" style="padding:6px; font-size:12px; cursor:pointer; font-weight:600; color:#334155; border-radius:4px; margin-bottom:2px; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">🔼 Sort A to Z</div>
+    <div onclick="sortExcelTable('desc')" style="padding:6px; font-size:12px; cursor:pointer; font-weight:600; color:#334155; border-radius:4px; border-bottom:1px solid #e2e8f0; margin-bottom:8px; padding-bottom:8px; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">🔽 Sort Z to A</div>
+    <div onclick="clearExcelFilter()" style="padding:6px; font-size:12px; cursor:pointer; font-weight:600; color:#ef4444; border-radius:4px; margin-bottom:8px; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">❌ Clear Filter</div>
+    <input type="text" id="excelSearchBox" placeholder="Search..." style="width:100%; box-sizing:border-box; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; margin-bottom:8px; outline:none; text-transform:none;" onkeyup="filterExcelList()">
+    <div style="padding-bottom:5px; border-bottom:1px solid #e2e8f0; margin-bottom:5px;">
+        <label style="font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content: flex-start; gap:8px; color:#334155; margin:0;">
+            <input type="checkbox" id="excelSelectAll" onchange="toggleAllExcel(this)" style="margin:0; width:14px; height:14px; cursor:pointer; flex-shrink:0;"> (Select All)
+        </label>
+    </div>
+    <div id="excelChecklist" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; padding-right:5px;"></div>
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; border-top:1px solid #e2e8f0; padding-top:10px;">
+        <button onclick="document.getElementById('excelFilterPopup').style.display='none'" style="background:#e2e8f0; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; color:#475569;">Cancel</button>
+        <button onclick="applyExcelFilter()" style="background:var(--accent); color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;">OK</button>
+    </div>
+</div>
+
 <div id="tdSuggestBox" class="suggestion-box" style="position: absolute; display: none; z-index: 1000000; box-shadow: 0 8px 20px rgba(0,0,0,0.3);"></div>
 
 <div id="toastNotification" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#1e293b; color:white; padding:12px 24px; border-radius:6px; font-size:14px; font-weight:600; z-index:9999999; box-shadow:0 10px 25px rgba(0,0,0,0.3); align-items:center; gap:15px;">
     <span id="toastText">Action completed.</span>
     <button onclick="performUndo(); document.getElementById('toastNotification').style.display='none';" style="background:none; border:none; color:var(--accent); font-weight:800; cursor:pointer; font-size:14px; padding:0; text-transform: uppercase;">UNDO</button>
+</div>
+
+<div style="width: 100%; max-width: 1400px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end;">
+    <h1 style="margin: 0; color: var(--primary); font-size: 26px; font-weight: 900; letter-spacing: -0.5px;">DigiFleet <span style="font-weight: 400; font-size: 16px; color: #64748b;">| <span id="companyNameDisplay" onclick="promptCompanyName()" style="cursor: pointer; border-bottom: 1px dashed #94a3b8; padding-bottom: 2px;" title="Click to change company name">Your Company Name</span></span></h1>
 </div>
 
 <div class="main-tabs">
@@ -235,14 +258,14 @@
         <div class="table-container limit-10" id="sharedInvTableContainer">
             <table class="main-table">
                 <thead id="tableHead"><tr>
-                    <th><div>Sr</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tableBody', event); filterMainTable()" onfocus="handleFilterSuggest(this, 'tableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Date</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tableBody', event); filterMainTable()" onfocus="handleFilterSuggest(this, 'tableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Bill No</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tableBody', event); filterMainTable()" onfocus="handleFilterSuggest(this, 'tableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Vehicle</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tableBody', event); filterMainTable()" onfocus="handleFilterSuggest(this, 'tableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Product</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tableBody', event); filterMainTable()" onfocus="handleFilterSuggest(this, 'tableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Party</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tableBody', event); filterMainTable()" onfocus="handleFilterSuggest(this, 'tableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Total</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tableBody', event); filterMainTable()" onfocus="handleFilterSuggest(this, 'tableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Status</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tableBody', event); filterMainTable()" onfocus="handleFilterSuggest(this, 'tableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
+                    <th><div>Sr</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                    <th><div>Date</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                    <th><div>Bill No</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                    <th><div>Vehicle</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                    <th><div>Product</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                    <th><div>Party</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                    <th><div>Total</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                    <th><div>Status</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
                     <th>Act</th>
                 </tr></thead>
                 <tbody id="tableBody"></tbody>
@@ -339,7 +362,7 @@
             <div class="input-group"><label>Old KM</label><input type="number" id="tOldKM" autocomplete="off" oninput="calcRunKM()"></div>
             <div class="input-group"><label>Run KM (Auto)</label><input type="text" id="tRunKM" autocomplete="off" readonly style="background:#eef2ff; color:var(--accent); font-weight:bold;"></div>
             
-            <div class="input-group"><label>Days Run</label><input type="text" id="tDays" autocomplete="off" placeholder="e.g. 45"></div>
+            <div class="input-group"><label>Days Run</label><input type="number" id="tDays" autocomplete="off" placeholder="e.g. 45"></div>
             
             <div class="input-group">
                 <label>Old Tyre Status</label>
@@ -364,18 +387,18 @@
         <div class="table-container limit-10" id="sharedTyreTableContainer">
             <table class="main-table">
                 <thead id="tyreTableHead"><tr>
-                    <th><div>Date</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Vehicle</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Invoice</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Party</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>New Tyre</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>New KM</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Old Tyre</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Old KM</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Run KM</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Days</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Status</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
-                    <th><div>Remark</div><div class="filter-wrap" style="position:relative;"><input type="search" class="tbl-filter" placeholder="Filter..." onkeyup="handleFilterSuggest(this, 'tyreTableBody', event); filterTyreTable()" onfocus="handleFilterSuggest(this, 'tyreTableBody', event)"><div class="suggestion-box" style="top:100%; margin-top:2px; width:100%;"></div></div></th>
+                    <th><div>Date</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>Vehicle</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>Invoice</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>Party</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>New Tyre</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>New KM</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>Old Tyre</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>Old KM</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>Run KM</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>Days</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>Status</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                    <th><div>Remark</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
                     <th>Act</th>
                 </tr></thead>
                 <tbody id="tyreTableBody"></tbody>
@@ -495,6 +518,22 @@
     <div class="charts-row">
         <div class="chart-container"><h3>Spending by Party (Top 10)</h3><div id="dashChartParty"></div></div>
         <div class="chart-container"><h3>Monthly Expenditure Trend</h3><div id="dashChartMonth"></div></div>
+    </div>
+</div>
+
+<div id="companyNameModal" class="modal-overlay" style="z-index: 1000001;">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h2 style="margin: 0; font-size:16px; color:var(--primary);">🏢 Set Company Name</h2>
+        </div>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <label>Company Name</label>
+            <input type="search" id="newCompanyNameInput" autocomplete="off" placeholder="Enter Company Name">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button class="close-btn" onclick="document.getElementById('companyNameModal').style.display='none'">Cancel</button>
+            <button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="executeSetCompanyName()">Save</button>
+        </div>
     </div>
 </div>
 
@@ -678,6 +717,7 @@
 
 <script>
     // --- GLOBAL STORAGE & DATABASE ---
+    let companyName = "Your Company Name"; // <-- BRANDING UPDATE
     let partyMaster = {}; let masteredProducts = []; let masteredStatuses = ["SOLD", "SCRAP", "NEW", "RETURNED"]; 
     let masteredVehicles = []; let currentEditingParty = ""; let currentModalAction = null; let customHeadings = [];
     
@@ -690,12 +730,35 @@
     let tyreOverrides = {};
     let currentEditingCell = null;
 
+    // --- EXCEL FILTER VARIABLES ---
+    let excelActiveCol = -1;
+    let excelActiveTbody = '';
+    let excelActiveBtn = null;
+    let tableFilters = { 'tableBody': {}, 'tyreTableBody': {} };
+
     function showToast(message) {
         document.getElementById('toastText').innerText = message;
         const toast = document.getElementById('toastNotification');
         toast.style.display = 'flex';
         clearTimeout(toastTimeout);
         toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 5000);
+    }
+
+    function promptCompanyName() {
+        document.getElementById('newCompanyNameInput').value = companyName === "Your Company Name" ? "" : companyName;
+        document.getElementById('companyNameModal').style.display = 'flex';
+        document.getElementById('newCompanyNameInput').focus();
+    }
+
+    function executeSetCompanyName() {
+        let name = document.getElementById('newCompanyNameInput').value.trim();
+        if (name !== "") {
+            companyName = name;
+            document.getElementById('companyNameDisplay').innerText = companyName;
+            saveDatabase();
+            showToast('Company Name updated.');
+        }
+        document.getElementById('companyNameModal').style.display = 'none';
     }
 
     function healTableAlignment() {
@@ -726,6 +789,7 @@
         if (window.isRestoring) return; 
         const oldData = localStorage.getItem('nsLogisticsData');
         const data = {
+            companyName, 
             partyMaster, masteredProducts, masteredStatuses, masteredVehicles, customHeadings,
             masteredTyreStatuses, masteredTyres, manualTyreStock, tyreOverrides,
             invTable: document.getElementById('tableBody').innerHTML, tyreTable: document.getElementById('tyreTableBody').innerHTML
@@ -767,6 +831,12 @@
         if(saved) {
             try {
                 const data = JSON.parse(saved);
+                
+                if(data.companyName) {
+                    companyName = data.companyName;
+                    document.getElementById('companyNameDisplay').innerText = companyName;
+                }
+
                 if(data.partyMaster && typeof data.partyMaster === 'object') partyMaster = data.partyMaster; 
                 if(Array.isArray(data.masteredProducts)) masteredProducts = data.masteredProducts;
                 if(Array.isArray(data.masteredStatuses)) masteredStatuses = data.masteredStatuses; 
@@ -826,6 +896,9 @@
         window.isRestoring = false;
         saveDatabase(isUndoRedo);
         renderTyreStock();
+        
+        applyExcelFilterCore('tableBody');
+        applyExcelFilterCore('tyreTableBody');
     }
     
     document.getElementById('tableBody').addEventListener('blur', function(e) { if(e.target.tagName === 'TD') saveDatabase(); }, true);
@@ -1021,6 +1094,140 @@
         }
     }
 
+    // --- NEW: EXCEL FILTER ENGINE ---
+    function openExcelFilter(e, btn, tbodyId) {
+        e.stopPropagation();
+        excelActiveBtn = btn;
+        excelActiveTbody = tbodyId;
+        excelActiveCol = Array.from(btn.closest('th').parentNode.children).indexOf(btn.closest('th'));
+
+        let rows = document.querySelectorAll('#' + tbodyId + ' tr');
+        let vals = new Set();
+        rows.forEach(r => {
+            if(r.children[excelActiveCol]) {
+                let txt = r.children[excelActiveCol].innerText.trim();
+                if(txt && txt !== "X") vals.add(txt);
+            }
+        });
+
+        let listHtml = '';
+        let activeFilters = tableFilters[tbodyId][excelActiveCol] || null;
+        document.getElementById('excelSelectAll').checked = !activeFilters;
+
+        Array.from(vals).sort().forEach(val => {
+            let safeVal = val.replace(/"/g, '&quot;');
+            let checked = (!activeFilters || activeFilters.has(val)) ? 'checked' : '';
+            listHtml += `<label class="excel-chk-label" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:flex-start; justify-content:flex-start; gap:8px; margin:0; padding:2px 0;">
+                <input type="checkbox" value="${safeVal}" ${checked} style="width:14px; height:14px; margin:0; margin-top:2px; flex-shrink:0; cursor:pointer;"> 
+                <span style="word-break: break-word; text-align: left; line-height: 1.3;">${safeVal}</span>
+            </label>`;
+        });
+        document.getElementById('excelChecklist').innerHTML = listHtml;
+        document.getElementById('excelSearchBox').value = '';
+
+        let popup = document.getElementById('excelFilterPopup');
+        popup.style.display = 'block';
+        let rect = btn.getBoundingClientRect();
+        
+        let leftPos = rect.left + window.scrollX;
+        if (leftPos + 240 > window.innerWidth) leftPos = window.innerWidth - 260; 
+        
+        popup.style.top = (rect.bottom + window.scrollY + 2) + 'px';
+        popup.style.left = leftPos + 'px';
+        document.getElementById('excelSearchBox').focus();
+    }
+
+    function toggleAllExcel(source) {
+        document.querySelectorAll('#excelChecklist input[type="checkbox"]').forEach(chk => {
+            if(chk.parentElement.style.display !== 'none') chk.checked = source.checked;
+        });
+    }
+
+    function filterExcelList() {
+        let text = document.getElementById('excelSearchBox').value.toUpperCase();
+        document.querySelectorAll('.excel-chk-label').forEach(lbl => {
+            if(lbl.innerText.toUpperCase().includes(text)) lbl.style.display = 'flex';
+            else lbl.style.display = 'none';
+        });
+    }
+
+    function applyExcelFilter() {
+        let checked = [];
+        let total = 0;
+        document.querySelectorAll('#excelChecklist input[type="checkbox"]').forEach(chk => {
+            total++;
+            if(chk.checked) checked.push(chk.value);
+        });
+
+        if(checked.length === total && document.getElementById('excelSearchBox').value === '') {
+            delete tableFilters[excelActiveTbody][excelActiveCol];
+            excelActiveBtn.classList.remove('active');
+        } else {
+            tableFilters[excelActiveTbody][excelActiveCol] = new Set(checked);
+            excelActiveBtn.classList.add('active');
+        }
+
+        applyExcelFilterCore(excelActiveTbody);
+        document.getElementById('excelFilterPopup').style.display = 'none';
+    }
+
+    function clearExcelFilter() {
+        delete tableFilters[excelActiveTbody][excelActiveCol];
+        excelActiveBtn.classList.remove('active');
+        applyExcelFilterCore(excelActiveTbody);
+        document.getElementById('excelFilterPopup').style.display = 'none';
+    }
+
+    function applyExcelFilterCore(tbodyId) {
+        let rows = document.querySelectorAll('#' + tbodyId + ' tr');
+        let filters = tableFilters[tbodyId];
+        let filterCols = Object.keys(filters);
+
+        rows.forEach(r => {
+            let show = true;
+            for(let i=0; i<filterCols.length; i++) {
+                let col = filterCols[i];
+                let cellText = r.children[col] ? r.children[col].innerText.trim() : "";
+                if(!filters[col].has(cellText)) { show = false; break; }
+            }
+            r.style.display = show ? '' : 'none';
+        });
+        updateSerialNumbers();
+    }
+
+    function sortExcelTable(dir) {
+        let tbody = document.getElementById(excelActiveTbody);
+        let rows = Array.from(tbody.querySelectorAll('tr'));
+        
+        let thText = '';
+        if (excelActiveTbody === 'tableBody') thText = document.querySelector(`#tableHead th:nth-child(${excelActiveCol+1})`)?.innerText || '';
+        if (excelActiveTbody === 'tyreTableBody') thText = document.querySelector(`#tyreTableHead th:nth-child(${excelActiveCol+1})`)?.innerText || '';
+        
+        let isDate = thText.toUpperCase().includes('DATE');
+
+        rows.sort((a, b) => {
+            let va = a.children[excelActiveCol] ? a.children[excelActiveCol].innerText.trim() : "";
+            let vb = b.children[excelActiveCol] ? b.children[excelActiveCol].innerText.trim() : "";
+
+            if(isDate) {
+                va = parseD(va); vb = parseD(vb);
+                return dir === 'asc' ? va - vb : vb - va;
+            } else {
+                let na = parseFloat(va.replace(/[^0-9.-]+/g,""));
+                let nb = parseFloat(vb.replace(/[^0-9.-]+/g,""));
+                if(!isNaN(na) && !isNaN(nb)) {
+                    return dir === 'asc' ? na - nb : nb - na;
+                }
+                return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            }
+        });
+
+        rows.forEach(r => tbody.appendChild(r));
+        updateSerialNumbers();
+        document.getElementById('excelFilterPopup').style.display = 'none';
+        saveDatabase(true); 
+    }
+
     function toggleSuggest(inputId, listType) {
         const input = document.getElementById(inputId);
         const box = input.parentElement.querySelector('.suggestion-box');
@@ -1034,57 +1241,6 @@
                 handleSuggest(input, listType, { forceAll: true });
             }
         }
-    }
-
-    function handleFilterSuggest(input, tbodyId, event) {
-        if(event && (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === 'Tab')) return;
-        document.querySelectorAll('.suggestion-box').forEach(b => { if(b !== input.nextElementSibling) b.style.display = "none"; });
-        const box = input.nextElementSibling;
-        const th = input.closest('th');
-        const colIdx = Array.from(th.parentNode.children).indexOf(th);
-        const rows = document.querySelectorAll('#' + tbodyId + ' tr');
-        const vals = new Set();
-        rows.forEach(r => {
-            const cell = r.children[colIdx];
-            if (cell) { const txt = cell.innerText.trim(); if(txt && txt !== "X") vals.add(txt); }
-        });
-        let list = Array.from(vals);
-        const val = input.value.toUpperCase();
-        const matches = val ? list.filter(item => item.toUpperCase().includes(val)) : list;
-        if (matches.length > 0) { box.innerHTML = matches.map(item => `<div class="suggestion-item" onclick="selectFilterSuggest(this, '${item.replace(/'/g, "\\'")}', '${tbodyId}')">${item}</div>`).join(''); box.style.display = "block"; } else { box.style.display = "none"; }
-    }
-
-    function selectFilterSuggest(itemEl, value, tbodyId) {
-        const input = itemEl.parentElement.previousElementSibling;
-        input.value = value;
-        itemEl.parentElement.style.display = "none";
-        if (tbodyId === 'tableBody') filterMainTable();
-        if (tbodyId === 'tyreTableBody') filterTyreTable();
-    }
-
-    function filterMainTable() {
-        const headers = document.querySelectorAll('#tableHead th');
-        const filters = Array.from(headers).map(th => th.querySelector('input')?.value.toUpperCase() || '');
-        const rows = document.querySelectorAll('#tableBody tr');
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            let show = true;
-            filters.forEach((filter, idx) => { if (filter && cells[idx] && !cells[idx].innerText.toUpperCase().includes(filter)) show = false; });
-            row.style.display = show ? '' : 'none';
-        });
-        updateSerialNumbers();
-    }
-    
-    function filterTyreTable() {
-        const headers = document.querySelectorAll('#tyreTableHead th');
-        const filters = Array.from(headers).map(th => th.querySelector('input')?.value.toUpperCase() || '');
-        const rows = document.querySelectorAll('#tyreTableBody tr');
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            let show = true;
-            filters.forEach((filter, idx) => { if (filter && cells[idx] && !cells[idx].innerText.toUpperCase().includes(filter)) show = false; });
-            row.style.display = show ? '' : 'none';
-        });
     }
 
     function updateSerialNumbers() {
@@ -1359,9 +1515,9 @@
     function printReport() {
         let printWin = window.open('', '', 'width=900,height=650');
         let htmlContent = document.getElementById('reportTableContainer').innerHTML;
-        let safeHTML = "<ht"+"ml><he"+"ad><title>NS Logistics - Report</title>" +
+        let safeHTML = "<ht"+"ml><he"+"ad><title>DigiFleet | " + companyName + " - Report</title>" +
         "<style>body{font-family:sans-serif;padding:20px;} table{width:100%;border-collapse:collapse;margin-top:20px;font-size:12px;} th,td{border:1px solid #cbd5e1;padding:8px;text-align:left;} th{background:#f8fafc;color:#1e293b;font-weight:bold;text-transform:uppercase;} h2{color:#1e293b;text-align:center;text-transform:uppercase;} @media print{@page{margin:1cm;size:landscape;} body{-webkit-print-color-adjust:exact;}}</style></he"+"ad><bo"+"dy>" +
-        "<h2>NS Logistics - Generated Report</h2>" + htmlContent + "</bo"+"dy></ht"+"ml>";
+        "<h2>" + companyName + " - Generated Report</h2>" + htmlContent + "</bo"+"dy></ht"+"ml>";
         printWin.document.write(safeHTML);
         printWin.document.close();
         printWin.focus();
@@ -1379,7 +1535,8 @@
         let encodedUri = encodeURI(csvContent);
         let link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `NS_Logistics_Report_${new Date().getTime()}.csv`);
+        let safeComp = companyName.replace(/[^a-zA-Z0-9]/g, '_');
+        link.setAttribute("download", `DigiFleet_${safeComp}_Report_${new Date().getTime()}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1626,8 +1783,10 @@
     }
 
     window.addEventListener('click', (e) => { 
-        if (!e.target.matches('input') && !e.target.matches('.dropdown-icon') && !e.target.classList.contains('suggestion-item') && !e.target.matches('td')) {
+        if (!e.target.matches('input') && !e.target.matches('.dropdown-icon') && !e.target.classList.contains('suggestion-item') && !e.target.matches('td') && !e.target.closest('#excelFilterPopup') && !e.target.matches('.tbl-filter-btn') && !e.target.matches('.excel-chk-label') && !e.target.matches('input[type="checkbox"]')) {
             document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = "none"); 
+            let p = document.getElementById('excelFilterPopup');
+            if(p) p.style.display = 'none';
         }
         if (!e.target.matches('.dot-btn')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show-dropdown'));
     });
@@ -1736,11 +1895,16 @@
             return;
         }
 
-        // NEW: MODAL ENTER KEY LOGIC
         if (document.getElementById('daysCalcModal').style.display === 'flex' && e.key === 'Enter') {
             e.preventDefault();
             doCalcDays();
             return;
+        }
+        
+        if (document.getElementById('companyNameModal').style.display === 'flex' && e.key === 'Enter') { 
+            e.preventDefault(); 
+            executeSetCompanyName(); 
+            return; 
         }
         
         if (e.target.tagName === 'TD' && e.target.getAttribute('contenteditable') === 'true') {
@@ -1794,7 +1958,7 @@
         
         if (e.key === 'Enter') {
             const activeView = document.querySelector('.app-container[style*="display: block"]');
-            if (activeView && e.target.id !== 'partySearch' && e.target.id !== 'dashGlobalFilter' && !e.target.classList.contains('tbl-filter')) { e.preventDefault(); focusNextField(document.activeElement); }
+            if (activeView && e.target.id !== 'partySearch' && e.target.id !== 'dashGlobalFilter' && !e.target.classList.contains('tbl-filter') && e.target.id !== 'excelSearchBox') { e.preventDefault(); focusNextField(document.activeElement); }
         }
 
         if (e.ctrlKey && e.key.toLowerCase() === 'z') {
@@ -1807,7 +1971,6 @@
         }
     });
 
-    // --- RESTORED GLOBAL SHORTCUTS ---
     window.addEventListener('keydown', function(e) {
         if (e.altKey && e.key === '1') { e.preventDefault(); switchToInventoryView(); }
         if (e.altKey && e.key === '2') { e.preventDefault(); switchToTyreView(); }
@@ -1858,7 +2021,11 @@
             document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show-dropdown'));
             document.getElementById('confirmDeleteModal').style.display = 'none';
             document.getElementById('renameHeadingModal').style.display = 'none';
+            document.getElementById('companyNameModal').style.display = 'none';
             
+            let p = document.getElementById('excelFilterPopup');
+            if(p) p.style.display = 'none';
+
             if (typeof stopEditing === 'function' && typeof currentEditingCell !== 'undefined' && currentEditingCell) {
                 stopEditing(currentEditingCell);
             }
