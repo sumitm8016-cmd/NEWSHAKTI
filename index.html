@@ -91,7 +91,6 @@
         .main-table td[contenteditable="true"]:focus { background: #fffbeb; box-shadow: inset 0 0 0 2px var(--warning); }
         .main-table td.is-editing { cursor: text; caret-color: var(--primary); background: white !important; box-shadow: inset 0 0 0 2px var(--accent) !important; position: relative;}
         
-        /* EXCEL STYLE FILTER BUTTON */
         .tbl-filter-btn { height: 20px; font-size: 10px; width: 100%; margin-top: 4px; padding: 0; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 3px; cursor: pointer; font-weight: bold; transition: 0.2s;}
         .tbl-filter-btn:hover { background: #e2e8f0; color: var(--primary); }
         .tbl-filter-btn.active { background: var(--warning); color: white; border-color: var(--warning); }
@@ -717,7 +716,7 @@
 
 <script>
     // --- GLOBAL STORAGE & DATABASE ---
-    let companyName = "Your Company Name"; // <-- BRANDING UPDATE
+    let companyName = "Your Company Name"; 
     let partyMaster = {}; let masteredProducts = []; let masteredStatuses = ["SOLD", "SCRAP", "NEW", "RETURNED"]; 
     let masteredVehicles = []; let currentEditingParty = ""; let currentModalAction = null; let customHeadings = [];
     
@@ -1094,6 +1093,17 @@
         }
     }
 
+    function formatDate(i) { 
+        if(!i || !i.value) return;
+        let p = i.value.split(/[-/.]/); 
+        if (p.length === 3) { 
+            let y = p[2].length === 2 ? "20" + p[2] : p[2]; 
+            i.value = `${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}-${y}`; 
+        } 
+    }
+
+    function syncDate(picker, textId) { let d = new Date(picker.value); if(!isNaN(d)) document.getElementById(textId).value = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; }
+
     // --- NEW: EXCEL FILTER ENGINE ---
     function openExcelFilter(e, btn, tbodyId) {
         e.stopPropagation();
@@ -1228,36 +1238,6 @@
         saveDatabase(true); 
     }
 
-    function toggleSuggest(inputId, listType) {
-        const input = document.getElementById(inputId);
-        const box = input.parentElement.querySelector('.suggestion-box');
-        if (box && box.style.display === 'block') {
-            box.style.display = 'none';
-        } else {
-            input.focus();
-            if (document.getElementById('exportModal').style.display === 'flex' && inputId.startsWith('exp')) {
-                handleMultiSuggest(input, listType, { forceAll: true });
-            } else {
-                handleSuggest(input, listType, { forceAll: true });
-            }
-        }
-    }
-
-    function updateSerialNumbers() {
-        let sr = 1;
-        document.querySelectorAll('#tableBody tr').forEach(row => {
-            if (row.style.display !== 'none') {
-                const srCell = row.querySelector('.sr-cell');
-                if (srCell) srCell.innerText = sr++;
-            }
-        });
-    }
-
-    let currentExportType = '';
-    let generatedReportHeaders = [];
-    let generatedReportRows = [];
-    let exportFilters = { vehicle: new Set(), party: new Set(), product: new Set(), status: new Set() };
-
     function openExportModal(type) {
         currentExportType = type;
         exportFilters = { vehicle: new Set(), party: new Set(), product: new Set(), status: new Set() };
@@ -1324,90 +1304,24 @@
 
     function parseD(str) { 
         if(!str) return 0;
-        let p = str.split(/[-/]/); 
+        let p = str.split(/[-/.]/); 
         if(p.length < 3) return 0;
-        let y = p[2].length === 2 ? '20' + p[2] : p[2];
-        return new Date(y, p[1]-1, p[0]).getTime(); 
-    }
-
-    // --- MODAL DAYS CALCULATOR ---
-    function openDaysCalculatorModal() {
-        document.getElementById('daysCalcModal').style.display = 'flex';
-        document.getElementById('calcFittedDate').value = '';
-        document.getElementById('calcRemovedDate').value = '';
-        document.getElementById('useCurrentDateCheck').checked = false;
-        document.getElementById('calcResultDisplay').innerText = '-';
-        document.getElementById('calcResultYMD').innerText = '(0 Yrs, 0 Mos, 0 Days)';
-        document.getElementById('calcFittedDate').focus();
-        window.tempCalcDays = null;
-    }
-
-    function toggleCurrentDate(checkbox) {
-        const removedInput = document.getElementById('calcRemovedDate');
-        if(checkbox.checked) {
-            let mainDate = document.getElementById('tDate').value;
-            if(mainDate && mainDate.trim() !== '') {
-                removedInput.value = mainDate;
-            } else {
-                let d = new Date();
-                removedInput.value = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
-            }
-        } else {
-            removedInput.value = '';
-        }
-    }
-
-    function doCalcDays() {
-        const fStr = document.getElementById('calcFittedDate').value;
-        const rStr = document.getElementById('calcRemovedDate').value;
-        const display = document.getElementById('calcResultDisplay');
-        const displayYMD = document.getElementById('calcResultYMD');
-        
-        if(!fStr || !rStr) {
-            display.innerText = '-';
-            displayYMD.innerText = '(0 Yrs, 0 Mos, 0 Days)';
-            window.tempCalcDays = null;
-            return;
-        }
-
-        const fDate = parseD(fStr);
-        const rDate = parseD(rStr);
-
-        if(fDate > 0 && rDate > 0 && rDate >= fDate) {
-            const diffTime = Math.abs(rDate - fDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            const diffHours = diffDays * 24;
-            
-            display.innerText = `${diffDays} Days and ${diffHours} Hours`;
-
-            let y = Math.floor(diffDays / 365);
-            let remainingDays = diffDays % 365;
-            let m = Math.floor(remainingDays / 30);
-            let d = remainingDays % 30;
-
-            displayYMD.innerText = `(${y} Yrs, ${m} Mos, ${d} Days)`;
-            window.tempCalcDays = diffDays;
-        } else {
-            display.innerText = 'Invalid Dates';
-            displayYMD.innerText = 'Dismount date must be after Installation date';
-            window.tempCalcDays = null;
-        }
-    }
-
-    function applyDaysCalc() {
-        if(window.tempCalcDays !== undefined && window.tempCalcDays !== null) {
-            document.getElementById('tDays').value = window.tempCalcDays;
-            document.getElementById('daysCalcModal').style.display = 'none';
-            document.getElementById('tStatus').focus();
-        } else {
-            alert("Please enter valid dates and click 'See Life Cycle' first.");
-        }
+        let y = parseInt(p[2], 10);
+        if (y < 100) y += 2000;
+        let m = parseInt(p[1], 10) - 1;
+        let d = parseInt(p[0], 10);
+        return new Date(y, m, d).getTime(); 
     }
 
     function generateReport() {
+        let fInput = document.getElementById('expDateFrom');
+        let tInput = document.getElementById('expDateTo');
+        formatDate(fInput);
+        formatDate(tInput);
+
         const sortVal = document.getElementById('expSort').value;
-        const fromDate = parseD(document.getElementById('expDateFrom').value);
-        const toDate = parseD(document.getElementById('expDateTo').value);
+        const fromDate = parseD(fInput.value);
+        const toDate = parseD(tInput.value);
 
         const tableId = currentExportType === 'inv' ? 'tableBody' : 'tyreTableBody';
         const headId = currentExportType === 'inv' ? 'tableHead' : 'tyreTableHead';
@@ -1669,6 +1583,21 @@
             currentTyreItems = []; renderTyreMiniTable(); healTableAlignment(); if(dateEl) dateEl.focus();
             renderTyreStock(); 
         } catch (error) { console.error("Save Tyre Error:", error); }
+    }
+
+    function toggleSuggest(inputId, listType) {
+        const input = document.getElementById(inputId);
+        const box = input.parentElement.querySelector('.suggestion-box');
+        if (box && box.style.display === 'block') {
+            box.style.display = 'none';
+        } else {
+            input.focus();
+            if (document.getElementById('exportModal').style.display === 'flex' && inputId.startsWith('exp')) {
+                handleMultiSuggest(input, listType, { forceAll: true });
+            } else {
+                handleSuggest(input, listType, { forceAll: true });
+            }
+        }
     }
 
     function handleSuggest(input, listType, event) {
@@ -2045,7 +1974,7 @@
         if (currentEl.id === 'stkRemark') { addManualStock(); return; }
         if (currentEl.id === 'btnAddStock') { addManualStock(); return; }
 
-        const inputs = Array.from(container.querySelectorAll('input:not([type="date"], .custom-in-temp, [tabindex="-1"], #tRunKM, .tbl-filter), select, button.btn-save-invoice, button.btn-add-item'));
+        const inputs = Array.from(container.querySelectorAll('input:not([type="date"], .custom-in-temp, [tabindex="-1"], #tRunKM), select, button.btn-save-invoice, button.btn-add-item'));
         const idx = inputs.indexOf(currentEl);
         
         if (currentEl.id === 'saveInvoiceBtn') { saveFullInvoice(); } 
