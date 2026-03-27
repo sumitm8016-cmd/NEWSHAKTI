@@ -32,6 +32,7 @@ body.dark-mode .dropdown-menu a:hover { background: #334155; }
 body.dark-mode .main-table td.is-editing { background: #0f172a !important; color: white; }
 body.dark-mode .metric-card h3 { color: #94a3b8; }
 body.dark-mode .chart-track { background: #334155; }
+body.dark-mode .toggle-btn { background: #334155 !important; border-color: #475569 !important; color: white !important; }
 
 .main-tabs{display:flex;gap:8px;width:100%;max-width:1400px;margin-bottom:10px;}
 .tab-btn{background:#cbd5e1;color:#334155;border:none;padding:8px 20px;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;transition:0.2s;}
@@ -153,7 +154,7 @@ input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-se
     <div onclick="clearExcelFilter()" style="padding:6px; font-size:12px; cursor:pointer; font-weight:600; color:#ef4444; border-radius:4px; margin-bottom:8px; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">❌ Clear Filter</div>
     <input type="text" id="excelSearchBox" placeholder="Search..." style="width:100%; box-sizing:border-box; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; margin-bottom:8px; outline:none; text-transform:none;" onkeyup="filterExcelList()">
     <div style="padding-bottom:5px; border-bottom:1px solid #e2e8f0; margin-bottom:5px;"><label style="font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content: flex-start; gap:8px; color:#334155; margin:0;"><input type="checkbox" id="excelSelectAll" onchange="toggleAllExcel(this)" style="margin:0; width:14px; height:14px; cursor:pointer; flex-shrink:0;"> (Select All)</label></div>
-    <div id="excelChecklist" style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; padding-right:5px;"></div>
+    <div id="excelChecklist" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; padding-right:5px;"></div>
     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; border-top:1px solid #e2e8f0; padding-top:10px;"><button onclick="document.getElementById('excelFilterPopup').style.display='none'" style="background:#e2e8f0; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; color:#475569;">Cancel</button><button onclick="applyExcelFilter()" style="background:var(--accent); color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;">OK</button></div>
 </div>
 
@@ -272,7 +273,7 @@ input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-se
             <div class="input-group"><label>Date (Alt+D)</label><div class="date-input-wrapper"><input type="search" id="tDate" placeholder="10-12-26" autocomplete="off" onblur="formatDate(this)"><input type="date" onchange="syncDate(this, 'tDate')" tabindex="-1"></div></div>
             <div class="input-group"><label>Vehicle No</label><div class="input-wrapper"><input type="search" id="tVehicle" autocomplete="off" onkeyup="handleSuggest(this, 'vehicle', event)" onfocus="handleSuggest(this, 'vehicle', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tVehicle', 'vehicle')">▼</span><div class="suggestion-box"></div></div></div>
             <div class="input-group"><label>Invoice No</label><input type="search" id="tInvoice" autocomplete="off"></div>
-            <div class="input-group"><label>Purchase Party (Alt+P)</label><div class="input-wrapper"><input type="search" id="tParty" autocomplete="off" onkeyup="handleSuggest(this, 'party', event)" onfocus="handleSuggest(this, 'party', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tParty', 'party')">▼</span><div class="suggestion-box"></div></div></div>
+            <div class="input-group"><label>Purchase Party (Alt+P)</label><div class="input-wrapper"><input type="search" id="tParty" autocomplete="off" placeholder="Select Party..." onkeyup="handleSuggest(this, 'party', event)" onfocus="handleSuggest(this, 'party', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tParty', 'party')">▼</span><div class="suggestion-box"></div></div></div>
         </div>
     </div>
     <div class="erp-section">
@@ -321,7 +322,14 @@ input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-se
 
 <div id="allTyresView" class="app-container full-view" style="display: none;">
     <div class="header" style="margin-bottom: 5px;">
-        <h2>📂 All Entered Tyres</h2>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <h2>📂 All Entered Tyres</h2>
+            <div style="display:flex; align-items:center; background:var(--card); border:2px solid var(--accent); border-radius:6px; padding:2px 8px; box-shadow:0 2px 5px rgba(59,130,246,0.2);">
+                <span style="font-size:14px;">🔍</span>
+                <input type="search" id="globalTyreSearch" placeholder="Find Tyre No. Anywhere..." style="border:none; box-shadow:none; padding:6px; width:220px; font-weight:bold; color:var(--primary); background:transparent;" onkeyup="applyGlobalTyreSearch()">
+            </div>
+            <span id="tyreSearchCountDisplay" style="font-size:12px; font-weight:bold; color:var(--warning);"></span>
+        </div>
         <div class="action-bar">
             <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
             <button class="btn-icon" onclick="openExportModal('tyre')" title="Print & Export (Alt+E)">🖨️ Export</button>
@@ -410,6 +418,7 @@ input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-se
         <div class="metric-card metric-primary"><h3>Avg Run KM</h3><p class="value" id="tyreDashMetricAvgKM">0</p></div>
         <div class="metric-card metric-success"><h3>Avg Days Run</h3><p class="value" id="tyreDashMetricAvgDays">0</p></div>
         <div class="metric-card metric-warning"><h3>Highest Consumption Veh</h3><p class="value" id="tyreDashMetricTopVeh" style="font-size: 20px;">-</p></div>
+        <div class="metric-card" style="border-left-color: #8b5cf6;"><h3>Total Tyres Sold</h3><p class="value" id="tyreDashMetricSold">0</p></div>
     </div>
     <div class="charts-row">
         <div class="chart-container"><h3>Tyre Changes by Vehicle (Top 10)</h3><div id="tyreDashChartVeh"></div></div>
@@ -430,7 +439,7 @@ input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-se
 <div id="confirmDeleteModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:#ef4444;">Confirm Deletion</h2></div><p id="confirmDeleteText" style="font-size:13px; color:#475569; margin-bottom:20px; line-height:1.4;">Are you sure you want to permanently delete this column?</p><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="document.getElementById('confirmDeleteModal').style.display='none'">Cancel</button><button class="btn-add-item" style="background:#ef4444; width: auto; padding: 8px 20px;" onclick="executeRemovePermanent()">🗑️ Delete</button></div></div></div>
 <div id="actionModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 id="actionModalTitle" style="margin: 0; font-size:16px; color:var(--primary);">Action</h2></div><div id="renameSection" style="display:none; margin-bottom:15px;"><div class="input-group"><label>New Name</label><input type="search" id="newPartyNameInput" autocomplete="off"></div></div><div id="detailSection" style="display:none; margin-bottom:15px;"><div class="input-group" style="margin-bottom:10px;"><label>Heading (e.g., Phone)</label><input type="search" id="detailHeadingInput" autocomplete="off"></div><div class="input-group"><label>Value</label><input type="search" id="detailValueInput" autocomplete="off"></div></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="closeActionModal()">Cancel</button><button class="btn-add-item" id="actionSaveBtn" style="width: auto; padding: 8px 20px;" onclick="handleModalSave()">Save</button></div></div></div>
 
-<div class="shortcut-legend">Alt+1: Bills | Alt+2: Tyre | Alt+3: Purchase Dash | Alt+4: Party | Alt+5: All Bills | Alt+6: All Tyres | Alt+7: Stock | Alt+8: Tyre Dash | Alt+S: Save | Alt+C: Calc | Esc: Close</div>
+<div class="shortcut-legend">Alt+1: Bills | Alt+2: Tyre | Alt+3: Dash | Alt+4: Party | Alt+5: All Bills | Alt+6: All Tyres | Alt+7: Stock | Alt+8: Tyre Dash | Alt+S: Save | Alt+C: Calc | Esc: Close</div>
 <script>
 let companyName = "Your Company Name"; 
 let partyMaster = {}; let masteredProducts = []; let masteredStatuses = ["SOLD", "SCRAP", "NEW", "RETURNED"]; 
@@ -446,55 +455,20 @@ function showToast(message) { document.getElementById('toastText').innerText = m
 function promptCompanyName() { document.getElementById('newCompanyNameInput').value = companyName === "Your Company Name" ? "" : companyName; document.getElementById('companyNameModal').style.display = 'flex'; document.getElementById('newCompanyNameInput').focus(); }
 function executeSetCompanyName() { let name = document.getElementById('newCompanyNameInput').value.trim(); if (name !== "") { companyName = name; document.getElementById('companyNameDisplay').innerText = companyName; saveDatabase(); showToast('Company Name updated.'); } document.getElementById('companyNameModal').style.display = 'none'; }
 
-function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('dfDarkMode', document.body.classList.contains('dark-mode'));
-}
-
-function exportBackup() {
-    const data = localStorage.getItem('nsLogisticsData');
-    if(!data) return alert("No data available to backup.");
-    const blob = new Blob([data], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    let safeComp = companyName.replace(/[^a-zA-Z0-9]/g, '_');
-    a.href = url; a.download = `DigiFleet_${safeComp}_Backup_${new Date().getTime()}.json`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
-
-function restoreBackup(e) {
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        try {
-            const content = evt.target.result;
-            JSON.parse(content); 
-            localStorage.setItem('nsLogisticsData', content);
-            alert("Backup restored successfully!");
-            location.reload();
-        } catch(err) { alert("Invalid backup file. Restoration failed."); }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-}
+function toggleDarkMode() { document.body.classList.toggle('dark-mode'); localStorage.setItem('dfDarkMode', document.body.classList.contains('dark-mode')); }
+function exportBackup() { const data = localStorage.getItem('nsLogisticsData'); if(!data) return alert("No data available to backup."); const blob = new Blob([data], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); let safeComp = companyName.replace(/[^a-zA-Z0-9]/g, '_'); a.href = url; a.download = `DigiFleet_${safeComp}_Backup_${new Date().getTime()}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+function restoreBackup(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(evt) { try { const content = evt.target.result; JSON.parse(content); localStorage.setItem('nsLogisticsData', content); alert("Backup restored successfully!"); location.reload(); } catch(err) { alert("Invalid backup file. Restoration failed."); } }; reader.readAsText(file); e.target.value = ''; }
 
 function toggleAlerts() { document.getElementById('alertsDropdown').classList.toggle('show-dropdown'); }
 function updateAlerts() {
     let alerts = [];
     for(let t in tyreOverrides) {
         let st = tyreOverrides[t].toUpperCase();
-        if(st.includes('VENDOR') || st.includes('ACTION') || (st.includes('REMOLD') && !st.includes('READY'))) {
-            alerts.push(`Tyre <b>${t}</b> is at vendor (${st}).`);
-        }
+        if(st.includes('VENDOR') || st.includes('ACTION') || (st.includes('REMOLD') && !st.includes('READY'))) { alerts.push(`Tyre <b>${t}</b> is at vendor (${st}).`); }
     }
     const badge = document.getElementById('alertBadge'); const list = document.getElementById('alertsList');
-    if(alerts.length > 0) {
-        badge.style.display = 'flex'; badge.innerText = alerts.length;
-        list.innerHTML = alerts.map(a => `<div style="padding:8px 0; border-bottom:1px solid #f1f5f9;">🚨 ${a}</div>`).join('');
-    } else {
-        badge.style.display = 'none'; list.innerHTML = 'All clear. No urgent actions needed.';
-    }
+    if(alerts.length > 0) { badge.style.display = 'flex'; badge.innerText = alerts.length; list.innerHTML = alerts.map(a => `<div style="padding:8px 0; border-bottom:1px solid #f1f5f9;">🚨 ${a}</div>`).join(''); } 
+    else { badge.style.display = 'none'; list.innerHTML = 'All clear. No urgent actions needed.'; }
 }
 
 function healTableAlignment() {
@@ -510,8 +484,7 @@ function saveDatabase(skipHistory = false) {
     const data = { companyName, partyMaster, masteredProducts, masteredStatuses, masteredVehicles, customHeadings, masteredTyreStatuses, masteredTyres, manualTyreStock, tyreOverrides, invTable: document.getElementById('tableBody').innerHTML, tyreTable: document.getElementById('tyreTableBody').innerHTML };
     const newDataStr = JSON.stringify(data);
     if (!skipHistory && oldData && oldData !== newDataStr) { undoStack.push(oldData); if(undoStack.length > 50) undoStack.shift(); redoStack = []; }
-    localStorage.setItem('nsLogisticsData', newDataStr);
-    updateAlerts();
+    localStorage.setItem('nsLogisticsData', newDataStr); updateAlerts();
 }
 
 function performUndo() { if (undoStack.length > 0) { redoStack.push(localStorage.getItem('nsLogisticsData')); localStorage.setItem('nsLogisticsData', undoStack.pop()); loadDatabase(true); document.getElementById('toastNotification').style.display = 'none'; } }
@@ -520,7 +493,6 @@ function performRedo() { if (redoStack.length > 0) { undoStack.push(localStorage
 function loadDatabase(isUndoRedo = false) {
     window.isRestoring = true; const saved = localStorage.getItem('nsLogisticsData');
     if(localStorage.getItem('dfDarkMode') === 'true') document.body.classList.add('dark-mode');
-    
     if(saved) {
         try {
             const data = JSON.parse(saved);
@@ -532,45 +504,25 @@ function loadDatabase(isUndoRedo = false) {
                 document.querySelectorAll('#tableBody tr').forEach(row => { 
                     const cells = Array.from(row.children);
                     if (cells[0] && !cells[0].classList.contains('sr-cell')) { const srTd = document.createElement('td'); srTd.className = 'sr-cell'; srTd.style.fontWeight = 'bold'; srTd.style.color = '#64748b'; row.insertBefore(srTd, cells[0]); cells.unshift(srTd); } 
-                    
-                    let partyIdx = -1;
-                    for(let i=0; i<cells.length; i++) { if(cells[i].classList.contains('party-cell')) partyIdx = i; }
-                    
+                    let partyIdx = -1; for(let i=0; i<cells.length; i++) { if(cells[i].classList.contains('party-cell')) partyIdx = i; }
                     if (partyIdx === 4) {
-                        let prodCell = cells[5];
-                        if(prodCell) {
-                            let pText = prodCell.innerText;
-                            if (/\(Qty:\s*\d+(\.\d+)?\)/i.test(pText)) { prodCell.innerText = pText.replace(/\(Qty:\s*\d+(\.\d+)?\)/i, '').trim(); }
-                        }
+                        let prodCell = cells[5]; if(prodCell) { let pText = prodCell.innerText; if (/\(Qty:\s*\d+(\.\d+)?\)/i.test(pText)) { prodCell.innerText = pText.replace(/\(Qty:\s*\d+(\.\d+)?\)/i, '').trim(); } }
                         let qC = row.children[6]; if(qC && !qC.classList.contains('calc-qty')) qC.classList.add('calc-qty');
                         let bC = row.children[7]; if(bC && !bC.classList.contains('calc-base')) bC.classList.add('calc-base');
                         let gC = row.children[8]; if(gC && !gC.classList.contains('calc-gst')) gC.classList.add('calc-gst');
                         let tC = row.children[9]; if(tC && !tC.classList.contains('calc-total')) tC.classList.add('calc-total');
                     } else if(partyIdx === 5 || partyIdx === 6) {
                         let prodCell = cells[4]; let qtyCell, partyCell, totalCell, statusCell; let qtyVal = "1";
-                        if (partyIdx === 6) {
-                            qtyCell = cells[5]; qtyVal = qtyCell.innerText.trim(); partyCell = cells[6]; totalCell = cells[7]; statusCell = cells[8];
-                            qtyCell.remove();
-                        } else {
-                            partyCell = cells[5]; totalCell = cells[6]; statusCell = cells[7];
-                            let pText = prodCell.innerText; let match = pText.match(/\(Qty:\s*(\d+(\.\d+)?)\)/i);
-                            if(match) { qtyVal = match[1]; prodCell.innerText = pText.replace(/\(Qty:\s*\d+(\.\d+)?\)/i, '').trim(); }
-                        }
+                        if (partyIdx === 6) { qtyCell = cells[5]; qtyVal = qtyCell.innerText.trim(); partyCell = cells[6]; totalCell = cells[7]; statusCell = cells[8]; qtyCell.remove(); } 
+                        else { partyCell = cells[5]; totalCell = cells[6]; statusCell = cells[7]; let pText = prodCell.innerText; let match = pText.match(/\(Qty:\s*(\d+(\.\d+)?)\)/i); if(match) { qtyVal = match[1]; prodCell.innerText = pText.replace(/\(Qty:\s*\d+(\.\d+)?\)/i, '').trim(); } }
                         let totalVal = parseFloat(totalCell.innerText.replace(/[^0-9.-]+/g,"")) || 0; let qNum = parseFloat(qtyVal) || 1;
-                        let bestGst = 0; let bestBase = totalVal / qNum;
-                        const standardGsts = [18, 12, 28, 5];
-                        for(let g of standardGsts) {
-                            let inferredBase = totalVal / ((1 + g/100) * qNum);
-                            if(Math.abs(Math.round(inferredBase) - inferredBase) < 0.05) { bestGst = g; bestBase = Math.round(inferredBase); break; }
-                        }
+                        let bestGst = 0; let bestBase = totalVal / qNum; const standardGsts = [18, 12, 28, 5];
+                        for(let g of standardGsts) { let inferredBase = totalVal / ((1 + g/100) * qNum); if(Math.abs(Math.round(inferredBase) - inferredBase) < 0.05) { bestGst = g; bestBase = Math.round(inferredBase); break; } }
                         let baseVal = bestBase.toFixed(2); let gstVal = bestGst + "%";
                         row.insertBefore(partyCell, prodCell);
-                        
                         let newQtyCell = document.createElement('td'); newQtyCell.contentEditable = "true"; newQtyCell.className = "calc-qty"; newQtyCell.innerText = qtyVal; newQtyCell.style.color="var(--accent)"; newQtyCell.style.fontWeight="bold";
                         let newBaseCell = document.createElement('td'); newBaseCell.contentEditable = "true"; newBaseCell.className = "calc-base"; newBaseCell.innerText = baseVal;
-                        let newGstCell = document.createElement('td'); newGstCell.contentEditable = "true"; newGstCell.className = "calc-gst"; newGstCell.innerText = gstVal;
-                        totalCell.className = "calc-total";
-                        
+                        let newGstCell = document.createElement('td'); newGstCell.contentEditable = "true"; newGstCell.className = "calc-gst"; newGstCell.innerText = gstVal; totalCell.className = "calc-total";
                         row.insertBefore(newQtyCell, totalCell); row.insertBefore(newBaseCell, totalCell); row.insertBefore(newGstCell, totalCell);
                     }
                 }); 
@@ -586,19 +538,14 @@ function loadDatabase(isUndoRedo = false) {
 
 let lastActiveField = null;
 document.addEventListener('focusin', function(e) { if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') { lastActiveField = e.target; } });
-window.addEventListener('focus', function() {
-    if (lastActiveField) { setTimeout(() => { lastActiveField.focus(); if(lastActiveField.tagName === 'INPUT') lastActiveField.select(); }, 150); } 
-    else { setTimeout(() => { document.getElementById('invDate').focus(); document.getElementById('invDate').select(); }, 150); }
-});
-
+window.addEventListener('focus', function() { if (lastActiveField) { setTimeout(() => { lastActiveField.focus(); if(lastActiveField.tagName === 'INPUT') lastActiveField.select(); }, 150); } else { setTimeout(() => { document.getElementById('invDate').focus(); document.getElementById('invDate').select(); }, 150); } });
 window.onload = function() { loadDatabase(); setTimeout(() => { window.focus(); document.getElementById('invDate').focus(); document.getElementById('invDate').select(); }, 400); };
 
 document.getElementById('tableBody').addEventListener('keyup', function(e) { 
     if(e.target.tagName === 'TD') {
         const cell = e.target;
         if(cell.classList.contains('calc-qty') || cell.classList.contains('calc-base') || cell.classList.contains('calc-gst')) {
-            const row = cell.closest('tr');
-            const qtyCell = row.querySelector('.calc-qty'); const baseCell = row.querySelector('.calc-base');
+            const row = cell.closest('tr'); const qtyCell = row.querySelector('.calc-qty'); const baseCell = row.querySelector('.calc-base');
             const gstCell = row.querySelector('.calc-gst'); const totalCell = row.querySelector('.calc-total');
             if(qtyCell && baseCell && gstCell && totalCell) {
                 let q = parseFloat(qtyCell.innerText) || 0; let b = parseFloat(baseCell.innerText) || 0;
@@ -613,13 +560,10 @@ document.getElementById('tableBody').addEventListener('keyup', function(e) {
 document.getElementById('tableBody').addEventListener('blur', function(e) { 
     if(e.target.tagName === 'TD') {
         const cell = e.target;
-        if(cell.classList.contains('calc-gst') && !cell.innerText.includes('%') && cell.innerText.trim() !== '') {
-            let g = parseFloat(cell.innerText) || 0; cell.innerText = g + '%';
-        }
+        if(cell.classList.contains('calc-gst') && !cell.innerText.includes('%') && cell.innerText.trim() !== '') { let g = parseFloat(cell.innerText) || 0; cell.innerText = g + '%'; }
         saveDatabase(); renderDashboard();
     }
 }, true);
-
 document.getElementById('tyreTableBody').addEventListener('blur', function(e) { if(e.target.tagName === 'TD') { saveDatabase(); renderTyreStock(); } }, true);
 
 function switchMainTab(viewId, btnId) { document.querySelectorAll('.app-container').forEach(v => v.style.display = 'none'); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(viewId).style.display = 'block'; if (btnId) { document.getElementById(btnId).classList.add('active'); } }
@@ -642,7 +586,6 @@ function addManualStock() {
     tyreEl.value = ""; vehEl.value = ""; statEl.value = ""; remEl.value = ""; document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = "none");
     saveDatabase(); renderTyreStock(); tyreEl.focus(); showToast('Stock manually added.');
 }
-
 function setTyreState(tyre, state) { tyreOverrides[tyre] = state; saveDatabase(); renderTyreStock(); showToast('Tyre status updated.'); }
 function deleteManualStockByTyre(tyre) { if(confirm("Delete this manual stock entry permanently?")) { manualTyreStock = manualTyreStock.filter(m => m.tyre !== tyre); delete tyreOverrides[tyre]; saveDatabase(); renderTyreStock(); showToast('Manual stock deleted.'); } }
 
@@ -662,19 +605,24 @@ function renderTyreStock() {
         let data = tyreLatest[t];
         if (data.loc === 'godown') {
             let fs = (tyreOverrides[t] || data.status || 'UNKNOWN').toUpperCase(); data.finalStatus = fs;
-            if (fs.includes('READY') || fs.includes('NEW') || (fs.includes('GODOWN') && !fs.includes('SCRAP'))) { data.bucket = 'ready'; cReady++; }
-            else if (fs.includes('SCRAP') || fs.includes('SOLD') || fs.includes('DEAD')) { data.bucket = 'dead'; cDead++; }
-            else { data.bucket = 'action'; cAction++; }
+            if (fs.includes('SOLD') || fs.includes('MISSING') || fs.includes('BLUST') || fs.includes('DEAD')) { data.bucket = 'dead'; cDead++; }
+            else if (fs.includes('VENDOR') || fs.includes('REMOLD') || fs.includes('ACTION')) { data.bucket = 'action'; cAction++; }
+            else { data.bucket = 'ready'; cReady++; }
             godownList.push({ tyre: t, ...data });
         }
     }
     godownList.sort((a, b) => parseD(b.date) - parseD(a.date)); let html = '';
     godownList.forEach(item => {
         let actionHtml = ''; let safeTyre = item.tyre.replace(/'/g, "\\'"); let fsCheck = item.finalStatus;
-        if (!fsCheck.includes('SOLD')) {
-            if (fsCheck.includes('VENDOR') || fsCheck === 'REMOLD') { actionHtml += `<button class="btn-detail" style="background:var(--success);" onclick="setTyreState('${safeTyre}', 'READY (REMOLDED)')">Receive Remold</button>`; } 
-            else if (fsCheck.includes('SCRAP')) { actionHtml += `<button class="btn-edit" style="background:var(--success);" onclick="setTyreState('${safeTyre}', 'SOLD')">Mark Sold</button><button class="btn-detail" onclick="setTyreState('${safeTyre}', 'AT VENDOR (REMOLD)')">Send to Remold</button>`; } 
-            else { actionHtml += `<button class="btn-detail" onclick="setTyreState('${safeTyre}', 'AT VENDOR (REMOLD)')">Send to Remold</button><button class="btn-edit" style="background:#ef4444; margin-left:4px;" onclick="setTyreState('${safeTyre}', 'SCRAP IN GODOWN')">Scrap</button>`; if (!fsCheck.includes('READY') && !fsCheck.includes('GODOWN') && !fsCheck.includes('NEW')) { actionHtml += `<button class="btn-edit" style="background:var(--success); margin-left:4px;" onclick="setTyreState('${safeTyre}', 'IN GODOWN')">Ready in Godown</button>`; } }
+        if (fsCheck.includes('SOLD')) {
+            actionHtml += `<button class="btn-detail" style="background:#64748b;" onclick="setTyreState('${safeTyre}', 'SCRAP IN GODOWN')">Undo Sold</button>`;
+        } else if (fsCheck.includes('VENDOR') || fsCheck === 'REMOLD') { 
+            actionHtml += `<button class="btn-detail" style="background:var(--success);" onclick="setTyreState('${safeTyre}', 'READY (REMOLDED)')">Receive Remold</button>`; 
+        } else { 
+            actionHtml += `<button class="btn-detail" onclick="setTyreState('${safeTyre}', 'AT VENDOR (REMOLD)')">Send Remold</button>`;
+            if (!fsCheck.includes('SCRAP')) { actionHtml += `<button class="btn-edit" style="background:#ef4444; margin-left:4px;" onclick="setTyreState('${safeTyre}', 'SCRAP IN GODOWN')">Mark Scrap</button>`; }
+            actionHtml += `<button class="btn-edit" style="background:var(--success); margin-left:4px;" onclick="setTyreState('${safeTyre}', 'SOLD')">Mark Sold</button>`;
+            if (!fsCheck.includes('READY') && !fsCheck.includes('GODOWN') && !fsCheck.includes('NEW')) { actionHtml += `<button class="btn-edit" style="background:#f59e0b; margin-left:4px;" onclick="setTyreState('${safeTyre}', 'IN GODOWN')">To Godown</button>`; }
         }
         let delBtn = item.source === 'Manual Add' ? `<button tabindex="-1" onclick="deleteManualStockByTyre('${safeTyre}')" style="color:red; cursor:pointer; border:none; background:none; font-weight:bold; margin-left:10px;">X</button>` : '';
         let statusBadge = `<span style="padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; background: #e2e8f0; color: #334155;">${item.finalStatus}</span>`;
@@ -687,36 +635,144 @@ function renderTyreStock() {
     if(tb) { tb.innerHTML = html; document.getElementById('stockReady').innerText = cReady; document.getElementById('stockAction').innerText = cAction; document.getElementById('stockDead').innerText = cDead; document.getElementById('stockTotal').innerText = cReady + cAction + cDead; }
 }
 
-// --- EXCEL FILTER ENGINE ---
+// --- EXCEL FILTER ENGINE (NOW WITH DATE TREE) ---
 function openExcelFilter(e, btn, tbodyId) {
     e.stopPropagation(); excelActiveBtn = btn; excelActiveTbody = tbodyId; excelActiveCol = Array.from(btn.closest('th').parentNode.children).indexOf(btn.closest('th'));
     let rows = document.querySelectorAll('#' + tbodyId + ' tr'); let vals = new Set();
     rows.forEach(r => { if(r.children[excelActiveCol]) { let txt = r.children[excelActiveCol].innerText.trim(); if(txt && txt !== "X") vals.add(txt); } });
-    let listHtml = ''; let activeFilters = tableFilters[tbodyId][excelActiveCol] || null; document.getElementById('excelSelectAll').checked = !activeFilters;
-    Array.from(vals).sort().forEach(val => {
-        let safeVal = val.replace(/"/g, '&quot;'); let checked = (!activeFilters || activeFilters.has(val)) ? 'checked' : '';
-        listHtml += `<label class="excel-chk-label" style="font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:flex-start; justify-content:flex-start; gap:8px; margin:0; padding:2px 0;"><input type="checkbox" value="${safeVal}" ${checked} style="width:14px; height:14px; margin:0; margin-top:2px; flex-shrink:0; cursor:pointer;"> <span style="word-break: break-word; text-align: left; line-height: 1.3;">${safeVal}</span></label>`;
-    });
+    
+    let activeFilters = tableFilters[tbodyId][excelActiveCol] || null; document.getElementById('excelSelectAll').checked = !activeFilters;
+    let thText = btn.closest('th').innerText.toUpperCase(); let isDate = thText.includes('DATE');
+    let listHtml = '';
+    
+    if (isDate) {
+        let tree = {}; let blanks = new Set();
+        vals.forEach(val => {
+            if(!val || val==='-' || val==='') { blanks.add(val); return; }
+            let parts = val.split(/[-/.]/);
+            if(parts.length === 3) {
+                let y = parts[2].length === 2 ? "20"+parts[2] : parts[2];
+                let m = parseInt(parts[1], 10); let d = parseInt(parts[0], 10);
+                if(isNaN(y)||isNaN(m)||isNaN(d)) { blanks.add(val); return; }
+                if(!tree[y]) tree[y] = {}; if(!tree[y][m]) tree[y][m] = [];
+                tree[y][m].push({raw: val, d: d});
+            } else { blanks.add(val); }
+        });
+
+        const months = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+        Object.keys(tree).sort((a,b)=>b-a).forEach(y => {
+            listHtml += `<div class="tree-node"><label class="excel-chk-label" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:center; gap:5px; padding:2px 0;"><span class="toggle-btn" style="width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; border:1px solid #cbd5e1; border-radius:3px; font-size:10px; line-height:1; background:#f8fafc;" onclick="toggleTree(event, this)">+</span><input type="checkbox" class="tree-chk year-chk" value="${y}" style="margin:0; cursor:pointer;"> ${y}</label><div class="tree-child" style="display:none; margin-left:18px; border-left:1px dashed #cbd5e1; padding-left:5px;">`;
+            Object.keys(tree[y]).sort((a,b)=>b-a).forEach(m => {
+                listHtml += `<div class="tree-node"><label class="excel-chk-label" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:center; gap:5px; padding:2px 0;"><span class="toggle-btn" style="width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; border:1px solid #cbd5e1; border-radius:3px; font-size:10px; line-height:1; background:#f8fafc;" onclick="toggleTree(event, this)">+</span><input type="checkbox" class="tree-chk month-chk" value="${m}" style="margin:0; cursor:pointer;"> ${months[m]}</label><div class="tree-child" style="display:none; margin-left:18px; border-left:1px dashed #cbd5e1; padding-left:5px;">`;
+                tree[y][m].sort((a,b)=>b.d-a.d).forEach(item => {
+                    let dStr = String(item.d).padStart(2,'0'); let checked = (!activeFilters || activeFilters.has(item.raw)) ? 'checked' : '';
+                    listHtml += `<label class="excel-chk-label date-leaf" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:center; gap:5px; padding:2px 0;"><input type="checkbox" class="tree-chk leaf-chk" value="${item.raw}" ${checked} style="margin:0; cursor:pointer;"> ${dStr}</label>`;
+                });
+                listHtml += `</div></div>`;
+            });
+            listHtml += `</div></div>`;
+        });
+        if(blanks.size > 0) {
+            blanks.forEach(bVal => {
+                let checked = (!activeFilters || activeFilters.has(bVal)) ? 'checked' : '';
+                listHtml += `<label class="excel-chk-label date-leaf" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:center; gap:5px; padding:2px 0;"><input type="checkbox" class="tree-chk leaf-chk" value="${bVal}" ${checked} style="margin:0; cursor:pointer;"> (Blanks / Others)</label>`;
+            });
+        }
+    } else {
+        Array.from(vals).sort().forEach(val => {
+            let safeVal = val.replace(/"/g, '&quot;'); let checked = (!activeFilters || activeFilters.has(val)) ? 'checked' : '';
+            listHtml += `<label class="excel-chk-label date-leaf" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:flex-start; justify-content:flex-start; gap:8px; margin:0; padding:2px 0;"><input type="checkbox" class="leaf-chk" value="${safeVal}" ${checked} style="width:14px; height:14px; margin:0; margin-top:2px; flex-shrink:0; cursor:pointer;"> <span style="word-break: break-word; text-align: left; line-height: 1.3;">${safeVal}</span></label>`;
+        });
+    }
+
     document.getElementById('excelChecklist').innerHTML = listHtml; document.getElementById('excelSearchBox').value = '';
     let popup = document.getElementById('excelFilterPopup'); popup.style.display = 'block';
+    
+    if(isDate) setTimeout(syncTreeStates, 50);
+
     let rect = btn.getBoundingClientRect(); let leftPos = rect.left + window.scrollX;
     if (leftPos + 240 > window.innerWidth) leftPos = window.innerWidth - 260; 
     popup.style.top = (rect.bottom + window.scrollY + 2) + 'px'; popup.style.left = leftPos + 'px'; document.getElementById('excelSearchBox').focus();
 }
 
-function toggleAllExcel(source) { document.querySelectorAll('#excelChecklist input[type="checkbox"]').forEach(chk => { if(chk.parentElement.style.display !== 'none') chk.checked = source.checked; }); }
-function filterExcelList() { let text = document.getElementById('excelSearchBox').value.toUpperCase(); document.querySelectorAll('.excel-chk-label').forEach(lbl => { lbl.style.display = lbl.innerText.toUpperCase().includes(text) ? 'flex' : 'none'; }); }
+window.toggleTree = function(e, btn) {
+    e.preventDefault(); e.stopPropagation();
+    let child = btn.closest('.tree-node').querySelector('.tree-child');
+    if(child) { if(child.style.display === 'none') { child.style.display = 'block'; btn.innerText = '-'; } else { child.style.display = 'none'; btn.innerText = '+'; } }
+};
+
+document.getElementById('excelChecklist').addEventListener('change', function(e) {
+    if(e.target.classList.contains('tree-chk')) {
+        let childDiv = e.target.closest('.tree-node')?.querySelector('.tree-child');
+        if(childDiv) { childDiv.querySelectorAll('input[type="checkbox"]').forEach(c => { if (c.closest('.excel-chk-label').style.display !== 'none') c.checked = e.target.checked; }); }
+        syncTreeStates();
+    }
+});
+
+function syncTreeStates() {
+    document.querySelectorAll('.month-chk').forEach(mChk => {
+        let childBox = mChk.closest('.tree-node').querySelector('.tree-child');
+        if(childBox) {
+            let leafs = Array.from(childBox.querySelectorAll('.leaf-chk')).filter(l => l.closest('.excel-chk-label').style.display !== 'none');
+            if(leafs.length > 0) { let allChecked = leafs.every(l => l.checked); let someChecked = leafs.some(l => l.checked); mChk.checked = allChecked; mChk.indeterminate = someChecked && !allChecked; }
+        }
+    });
+    document.querySelectorAll('.year-chk').forEach(yChk => {
+        let childBox = yChk.closest('.tree-node').querySelector('.tree-child');
+        if(childBox) {
+            let mChks = Array.from(childBox.querySelectorAll('.month-chk')).filter(m => m.closest('.excel-chk-label').style.display !== 'none');
+            if(mChks.length > 0) { let allChecked = mChks.every(m => m.checked); let someChecked = mChks.some(m => m.checked || m.indeterminate); yChk.checked = allChecked; yChk.indeterminate = someChecked && !allChecked; }
+        }
+    });
+    let allLeafs = Array.from(document.querySelectorAll('#excelChecklist .leaf-chk')).filter(l => l.closest('.excel-chk-label').style.display !== 'none');
+    if(allLeafs.length > 0) { let allC = allLeafs.every(l => l.checked); let someC = allLeafs.some(l => l.checked); let sa = document.getElementById('excelSelectAll'); sa.checked = allC; sa.indeterminate = someC && !allC; }
+}
+
+function toggleAllExcel(source) {
+    document.querySelectorAll('#excelChecklist input[type="checkbox"]').forEach(chk => { let lbl = chk.closest('.excel-chk-label'); if(lbl && lbl.style.display !== 'none') chk.checked = source.checked; });
+    if(document.querySelector('.tree-chk')) syncTreeStates();
+}
+
+function filterExcelList() {
+    let text = document.getElementById('excelSearchBox').value.toUpperCase();
+    document.querySelectorAll('.date-leaf').forEach(lbl => { let match = lbl.innerText.toUpperCase().includes(text); lbl.style.display = match ? 'flex' : 'none'; });
+    let treeChildren = document.querySelectorAll('.tree-child');
+    if(treeChildren.length > 0) {
+        treeChildren.forEach(tc => {
+            let hasVisible = Array.from(tc.querySelectorAll('.date-leaf')).some(l => l.style.display !== 'none');
+            if(hasVisible) { tc.style.display = 'block'; let btn = tc.previousElementSibling.querySelector('.toggle-btn'); if(btn) btn.innerText = '-'; tc.previousElementSibling.style.display = 'flex'; } 
+            else { tc.style.display = 'none'; tc.previousElementSibling.style.display = 'none'; }
+        });
+    }
+}
+
 function applyExcelFilter() {
-    let checked = []; let total = 0; document.querySelectorAll('#excelChecklist input[type="checkbox"]').forEach(chk => { total++; if(chk.checked) checked.push(chk.value); });
+    let checked = []; let total = 0;
+    document.querySelectorAll('#excelChecklist .leaf-chk').forEach(chk => { total++; if(chk.checked) checked.push(chk.value); });
     if(checked.length === total && document.getElementById('excelSearchBox').value === '') { delete tableFilters[excelActiveTbody][excelActiveCol]; excelActiveBtn.classList.remove('active'); } 
     else { tableFilters[excelActiveTbody][excelActiveCol] = new Set(checked); excelActiveBtn.classList.add('active'); }
     applyExcelFilterCore(excelActiveTbody); document.getElementById('excelFilterPopup').style.display = 'none';
 }
 function clearExcelFilter() { delete tableFilters[excelActiveTbody][excelActiveCol]; excelActiveBtn.classList.remove('active'); applyExcelFilterCore(excelActiveTbody); document.getElementById('excelFilterPopup').style.display = 'none'; }
+
 function applyExcelFilterCore(tbodyId) {
     let rows = document.querySelectorAll('#' + tbodyId + ' tr'); let filters = tableFilters[tbodyId]; let filterCols = Object.keys(filters);
     rows.forEach(r => { let show = true; for(let i=0; i<filterCols.length; i++) { let col = filterCols[i]; let cellText = r.children[col] ? r.children[col].innerText.trim() : ""; if(!filters[col].has(cellText)) { show = false; break; } } r.style.display = show ? '' : 'none'; }); updateSerialNumbers();
 }
+
+// NEW FEATURE: GLOBAL TYRE NUMBER SEARCH
+function applyGlobalTyreSearch() {
+    let text = document.getElementById('globalTyreSearch').value.toUpperCase().trim();
+    let rows = document.querySelectorAll('#tyreTableBody tr'); let count = 0;
+    rows.forEach(r => {
+        if(!text) { r.style.display = ''; count++; return; }
+        let newT = r.children[4] ? r.children[4].innerText.toUpperCase() : '';
+        let oldT = r.children[6] ? r.children[6].innerText.toUpperCase() : '';
+        if(newT.includes(text) || oldT.includes(text)) { r.style.display = ''; count++; } else { r.style.display = 'none'; }
+    });
+    document.getElementById('tyreSearchCountDisplay').innerText = text ? `Found ${count} times` : '';
+}
+
 function sortExcelTable(dir) {
     let tbody = document.getElementById(excelActiveTbody); let rows = Array.from(tbody.querySelectorAll('tr'));
     let thText = ''; if (excelActiveTbody === 'tableBody') thText = document.querySelector(`#tableHead th:nth-child(${excelActiveCol+1})`)?.innerText || ''; if (excelActiveTbody === 'tyreTableBody') thText = document.querySelector(`#tyreTableHead th:nth-child(${excelActiveCol+1})`)?.innerText || '';
@@ -909,7 +965,7 @@ function navigateTable(cell, key) {
 }
 
 window.addEventListener('click', (e) => { 
-    if (!e.target.matches('input') && !e.target.matches('.dropdown-icon') && !e.target.classList.contains('suggestion-item') && !e.target.matches('td') && !e.target.closest('#excelFilterPopup') && !e.target.matches('.tbl-filter-btn') && !e.target.matches('.excel-chk-label') && !e.target.matches('input[type="checkbox"]')) {
+    if (!e.target.matches('input') && !e.target.matches('.dropdown-icon') && !e.target.classList.contains('suggestion-item') && !e.target.matches('td') && !e.target.closest('#excelFilterPopup') && !e.target.matches('.tbl-filter-btn') && !e.target.matches('.excel-chk-label') && !e.target.matches('input[type="checkbox"]') && !e.target.matches('.toggle-btn')) {
         document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = "none"); let p = document.getElementById('excelFilterPopup'); if(p) p.style.display = 'none';
     }
     if (!e.target.matches('.dot-btn')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show-dropdown'));
@@ -953,7 +1009,7 @@ document.addEventListener('keydown', e => {
         if (document.getElementById('renameHeadingModal').style.display === 'flex') { e.preventDefault(); executeRenameHeading(); return; } 
         if (document.getElementById('confirmDeleteModal').style.display === 'flex') { e.preventDefault(); executeRemovePermanent(); return; } 
         const activeView = document.querySelector('.app-container[style*="display: block"]');
-        if (activeView && e.target.id !== 'partySearch' && e.target.id !== 'dashGlobalFilter' && !e.target.classList.contains('tbl-filter') && e.target.id !== 'excelSearchBox') { e.preventDefault(); focusNextField(document.activeElement); }
+        if (activeView && e.target.id !== 'partySearch' && e.target.id !== 'dashGlobalFilter' && e.target.id !== 'globalTyreSearch' && !e.target.classList.contains('tbl-filter') && e.target.id !== 'excelSearchBox') { e.preventDefault(); focusNextField(document.activeElement); }
     }
     if (e.ctrlKey && e.key.toLowerCase() === 'z') { if (document.activeElement.tagName === 'INPUT' || document.activeElement.classList.contains('is-editing')) return; e.preventDefault(); performUndo(); }
     if (e.ctrlKey && e.key.toLowerCase() === 'y') { if (document.activeElement.tagName === 'INPUT' || document.activeElement.classList.contains('is-editing')) return; e.preventDefault(); performRedo(); }
@@ -990,7 +1046,6 @@ function focusNextField(currentEl) {
     if (currentEl.id === 'saveInvoiceBtn') { saveFullInvoice(); } else if (currentEl.id === 'saveTyreBtn') { saveFullTyreEntry(); } else if (idx > -1 && idx < inputs.length - 1) { inputs[idx + 1].focus(); }
 }
 
-// PARTY DIRECTORY FUNCTIONS
 function openHeadingModal() { document.getElementById('headingModal').style.display='flex'; document.getElementById('newHeadingName').value=''; document.getElementById('newHeadingName').focus(); }
 function executeAddHeading() { const n = document.getElementById('newHeadingName').value.trim(), t = document.getElementById('newHeadingType').value; if (!n) return; const id = "customField_"+Date.now(), h = {id:id, name:n, type:t}; customHeadings.push(h); saveDatabase(); renderHeading(h, true); document.getElementById('headingModal').style.display='none'; }
 function renderHeading(h, isNew=false) { const d = document.createElement("div"); d.className="input-group"; d.id="group_"+h.id; const sn = h.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); if(h.type==='perm'){ d.innerHTML=`<div style="display:flex; justify-content:space-between; align-items:flex-end;"><label id="lbl_${h.id}">${sn}</label></div><input type="search" class="custom-in-perm" id="${h.id}" autocomplete="off">`; document.getElementById('headerGrid').querySelector('.form-grid').appendChild(d); if(!document.getElementById("th_"+h.id)){ const th=document.createElement("th"); th.id="th_"+h.id; th.innerHTML=`<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:3px;"><div ondblclick="renameHeading('${h.id}')" id="hname_${h.id}" style="color:var(--primary); font-weight:bold; cursor:pointer; text-decoration: underline dashed #cbd5e1; text-underline-offset: 3px;">${sn}</div><button tabindex="-1" style="background:#fee2e2; color:#ef4444; border:none; font-size:10px; font-weight:bold; cursor:pointer; padding:4px 8px; border-radius:4px;" onclick="removePermanent('${h.id}')">🗑️</button></div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button>`; const hr=document.querySelector('#tableHead tr'); hr.insertBefore(th,hr.lastElementChild); if(isNew) healTableAlignment(); } } else { d.innerHTML=`<div style="display:flex; justify-content:space-between; align-items:flex-end;"><label>${sn} <span style="color:var(--warning); font-size:11px;">(Temp)</span></label></div><input type="search" class="custom-in-temp" data-label="${sn}" autocomplete="off">`; document.getElementById('headerGrid').querySelector('.form-grid').appendChild(d); } }
@@ -1009,7 +1064,6 @@ function executeAddDetail() { const h=document.getElementById('detailHeadingInpu
 function openAddPartyModal() { currentEditingParty=""; document.getElementById('actionModalTitle').innerText="New Party"; document.getElementById('renameSection').style.display="block"; document.getElementById('newPartyNameInput').value=""; currentModalAction=executeManualPartyAdd; document.getElementById('actionModal').style.display="flex"; document.getElementById('newPartyNameInput').focus(); }
 function executeManualPartyAdd() { const n=document.getElementById('newPartyNameInput').value.toUpperCase().trim(); if(n){ registerParty(n); saveDatabase(); renderPartyFullList(); } closeActionModal(); }
 
-// PURCHASE DASHBOARD
 function renderDashboard() {
     let filterHTML = ''; let currentFilterVals = {};
     customHeadings.forEach((h, i) => {
@@ -1043,31 +1097,42 @@ function renderDashboard() {
     if(mc) { mc.innerHTML = ""; if (Object.keys(mt).length === 0) { mc.innerHTML = "<div class='empty-state'>No data available</div>"; } else { let mx = Math.max(...Object.values(mt)); Object.entries(mt).sort().forEach(([m, a]) => { let w = (a / mx) * 100; mc.innerHTML += `<div class="chart-bar-row"><div class="chart-label">${m}</div><div class="chart-track"><div class="chart-fill success-bg" style="width: ${w}%"></div></div><div class="chart-value">₹${a.toLocaleString('en-IN')}</div></div>`; }); } }
 }
 
-// TYRE ANALYTICS DASHBOARD
 function renderTyreDashboard() {
     const filterText = document.getElementById('tyreDashGlobalFilter')?.value.toUpperCase() || ""; const rows = document.querySelectorAll('#tyreTableBody tr');
     let totalTyres = 0; let totalKM = 0; let validKMCount = 0; let totalDays = 0; let validDaysCount = 0; let vehTotals = {}; let monthTotals = {}; let topVehName = "-", topVehCount = 0;
-
+    
+    let soldCount = 0;
+    let tyreLatest = {};
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length >= 12) {
             const date = cells[0].innerText.trim(); const veh = cells[1].innerText.toUpperCase().trim(); const runKMStr = cells[8].innerText.trim(); const daysStr = cells[9].innerText.trim();
+            const newTyre = cells[4].innerText.trim(); const oldTyre = cells[6].innerText.trim(); const billStatus = cells[10].innerText.trim();
+            if (newTyre && newTyre !== '-' && newTyre.toUpperCase() !== 'NULL' && !tyreLatest[newTyre]) tyreLatest[newTyre] = { loc: 'truck' }; 
+            if (oldTyre && oldTyre !== '-' && oldTyre.toUpperCase() !== 'MISSING' && !tyreLatest[oldTyre]) tyreLatest[oldTyre] = { loc: 'godown', status: billStatus };
+            
             if (filterText && !veh.includes(filterText)) return;
             totalTyres++;
-
             let km = parseFloat(runKMStr.replace(/,/g, '')); if (!isNaN(km) && km > 0) { totalKM += km; validKMCount++; }
             let days = parseFloat(daysStr.replace(/,/g, '')); if (!isNaN(days) && days > 0) { totalDays += days; validDaysCount++; }
-
             if (vehTotals[veh]) vehTotals[veh]++; else vehTotals[veh] = 1;
             if(vehTotals[veh] > topVehCount) { topVehCount = vehTotals[veh]; topVehName = veh; }
-
-            let monthStr = "Unknown";
-            if (date.length >= 8) { const parts = date.split(/[-/]/); if (parts.length >= 3) monthStr = `${parts[1]}-${parts[2]}`; }
+            let monthStr = "Unknown"; if (date.length >= 8) { const parts = date.split(/[-/]/); if (parts.length >= 3) monthStr = `${parts[1]}-${parts[2]}`; }
             if (monthTotals[monthStr]) monthTotals[monthStr]++; else monthTotals[monthStr] = 1;
         }
     });
 
+    [...manualTyreStock].sort((a, b) => parseD(b.date) - parseD(a.date)).forEach(m => { if (!tyreLatest[m.tyre]) tyreLatest[m.tyre] = { loc: 'godown', status: m.status }; });
+    for (let t in tyreLatest) {
+        if (tyreLatest[t].loc === 'godown') {
+            let fs = (tyreOverrides[t] || tyreLatest[t].status || 'UNKNOWN').toUpperCase();
+            if (fs.includes('SOLD')) soldCount++;
+        }
+    }
+
     document.getElementById('tyreDashMetricTotal').innerText = totalTyres; document.getElementById('tyreDashMetricAvgKM').innerText = validKMCount > 0 ? Math.round(totalKM / validKMCount).toLocaleString('en-IN') : "0"; document.getElementById('tyreDashMetricAvgDays').innerText = validDaysCount > 0 ? Math.round(totalDays / validDaysCount).toLocaleString('en-IN') : "0"; document.getElementById('tyreDashMetricTopVeh').innerText = topVehName;
+    document.getElementById('tyreDashMetricSold').innerText = soldCount;
+    
     const vehChart = document.getElementById('tyreDashChartVeh');
     if(vehChart) { vehChart.innerHTML = ""; if (Object.keys(vehTotals).length === 0) { vehChart.innerHTML = "<div class='empty-state'>No data available</div>"; } else { let maxScale = Math.max(...Object.values(vehTotals)); Object.entries(vehTotals).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(([veh, amt]) => { let w = (amt / maxScale) * 100; vehChart.innerHTML += `<div class="chart-bar-row"><div class="chart-label" title="${veh}">${veh}</div><div class="chart-track"><div class="chart-fill" style="width: ${w}%"></div></div><div class="chart-value">${amt}</div></div>`; }); } }
     const monthChart = document.getElementById('tyreDashChartMonth');
