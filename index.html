@@ -34,6 +34,36 @@ body.dark-mode .metric-card h3 { color: #94a3b8; }
 body.dark-mode .chart-track { background: #334155; }
 body.dark-mode .toggle-btn { background: #334155 !important; border-color: #475569 !important; color: white !important; }
 
+/* CORPORATE LOGIN SCREEN CSS */
+.login-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; justify-content: center; align-items: center; z-index: 999999999; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+.login-card { background: #ffffff; width: 100%; max-width: 420px; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); padding: 40px; box-sizing: border-box; text-align: center; position: relative; overflow: hidden; }
+.login-logo { font-size: 32px; font-weight: 900; color: #1e293b; letter-spacing: -1px; margin-bottom: 5px; }
+.login-logo span { color: #3b82f6; }
+.login-subtitle { font-size: 13px; color: #64748b; margin-bottom: 30px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.login-form-group { text-align: left; margin-bottom: 15px; position: relative; }
+.login-form-group label { display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+.login-input { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 14px; font-weight: 600; color: #1e293b; box-sizing: border-box; transition: 0.2s; background: #f8fafc; text-transform: none; }
+.login-input:focus { border-color: #3b82f6; background: #ffffff; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); outline: none; }
+.login-btn { width: 100%; background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 6px; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 10px; box-shadow: 0 4px 12px rgba(59,130,246,0.3); text-transform: uppercase; letter-spacing: 0.5px; }
+.login-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(59,130,246,0.4); }
+.login-link { display: block; margin-top: 20px; font-size: 13px; color: #3b82f6; font-weight: 700; cursor: pointer; text-decoration: none; }
+.login-link:hover { text-decoration: underline; }
+.login-error { color: #ef4444; font-size: 12px; font-weight: bold; margin-bottom: 15px; display: none; background: #fee2e2; padding: 10px; border-radius: 4px; border: 1px solid #fca5a5; }
+
+/* MAIN APP CSS */
+.app-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; display: none; /* Hidden until logged in */ }
+
+/* EXCEL FILTER TREE CSS */
+.tree-node-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+.tree-toggle-box { width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #94a3b8; font-size: 12px; font-weight: bold; background: #fff; cursor: pointer; color: #334155; line-height: 1; user-select: none; border-radius: 2px; }
+.dark-mode .tree-toggle-box { background: #334155; border-color: #64748b; color: #e2e8f0; }
+.tree-spacer { width: 14px; }
+.tree-label-text { font-size: 12px; font-weight: 500; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 6px; margin: 0; }
+.dark-mode .tree-label-text { color: #e2e8f0; }
+.popup-menu-item { padding: 6px; font-size: 12px; cursor: pointer; font-weight: 600; color: #334155; border-radius: 4px; display: flex; align-items: center; gap: 8px; }
+.popup-menu-item:hover { background: var(--accent); color: white; }
+.dark-mode .popup-menu-item { color: #e2e8f0; }
+
 .main-tabs{display:flex;gap:8px;width:100%;max-width:1400px;margin-bottom:10px;}
 .tab-btn{background:#cbd5e1;color:#334155;border:none;padding:8px 20px;border-radius:6px;font-size:14px;font-weight:bold;cursor:pointer;transition:0.2s;}
 .tab-btn.active{background:var(--accent);color:white;box-shadow:0 2px 5px rgba(0,0,0,0.2);}
@@ -131,316 +161,532 @@ input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-se
 </head>
 <body>
 
-<div style="width: 100%; max-width: 1400px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end;">
-    <h1 style="margin: 0; color: var(--primary); font-size: 26px; font-weight: 900; letter-spacing: -0.5px;">DigiFleet <span style="font-weight: 400; font-size: 16px; color: #64748b;">| <span id="companyNameDisplay" onclick="promptCompanyName()" style="cursor: pointer; border-bottom: 1px dashed #94a3b8; padding-bottom: 2px;" title="Click to change company name">Your Company Name</span></span></h1>
-    <div style="display:flex; gap:12px; align-items:center;">
-        <div style="position:relative;">
-            <button onclick="toggleAlerts()" style="background:none; border:none; font-size:22px; cursor:pointer; position:relative;" title="Action Needed Alerts">🔔<span id="alertBadge" style="display:none; position:absolute; top:-2px; right:-2px; background:#ef4444; color:white; font-size:10px; font-weight:bold; border-radius:50%; width:16px; height:16px; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);">0</span></button>
-            <div id="alertsDropdown" class="dropdown-menu" style="right:0; top:35px; width:300px; max-height:400px; overflow-y:auto; z-index:100000;">
-                <div style="padding:10px; font-weight:bold; border-bottom:1px solid #e2e8f0; color:var(--primary); font-size:14px;">Action Needed Alerts</div>
-                <div id="alertsList" style="padding:10px; font-size:12px; color:#64748b;">No alerts right now.</div>
+<div id="loginGateway" class="login-overlay">
+    <div class="login-card">
+        <div class="login-logo">Digi<span>Fleet</span></div>
+        <div class="login-subtitle">Enterprise ERP Access</div>
+        
+        <div id="viewLogin">
+            <div id="loginMsg" class="login-error"></div>
+            <div class="login-form-group">
+                <label>User ID / Mobile Number</label>
+                <input type="text" id="logId" class="login-input" placeholder="Enter ID or Number" autocomplete="off">
+            </div>
+            <div class="login-form-group">
+                <label>Password</label>
+                <div style="position:relative;">
+                    <input type="password" id="logPass" class="login-input" placeholder="Enter Password" style="padding-right:35px;">
+                    <span onclick="togglePassword('logPass')" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#64748b; font-size:16px; padding:5px;">👁️</span>
+                </div>
+            </div>
+            <button class="login-btn" onclick="executeLogin()">Sign In</button>
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <a class="login-link" style="margin-top:0;" onclick="toggleLoginView('viewForgot')">Forgot Password?</a>
+                <a class="login-link" style="margin-top:0;" onclick="toggleLoginView('viewSignup')">Create Account</a>
             </div>
         </div>
-        <button onclick="toggleDarkMode()" style="background:none; border:none; font-size:22px; cursor:pointer;" title="Toggle Dark Mode">🌙</button>
-        <button onclick="exportBackup()" class="btn-icon" style="height:32px; font-size:12px; background:var(--success); color:white; border:none; box-shadow:0 2px 4px rgba(0,0,0,0.1);">💾 Backup</button>
-        <button onclick="document.getElementById('importBackup').click()" class="btn-icon" style="height:32px; font-size:12px; background:var(--accent); color:white; border:none; box-shadow:0 2px 4px rgba(0,0,0,0.1);">📂 Restore</button>
-        <input type="file" id="importBackup" accept=".json" style="display:none;" onchange="restoreBackup(event)">
+
+        <div id="viewSignup" style="display:none;">
+            <div id="signMsg" class="login-error"></div>
+            <div class="login-form-group">
+                <label>New User ID / Mobile Number</label>
+                <input type="text" id="signId" class="login-input" placeholder="Set an ID" autocomplete="off">
+            </div>
+            <div class="login-form-group">
+                <label>Recovery Email (For Password Reset)</label>
+                <input type="email" id="signEmail" class="login-input" placeholder="name@company.com" autocomplete="off">
+            </div>
+            <div class="login-form-group">
+                <label>Set Password</label>
+                <div style="position:relative;">
+                    <input type="password" id="signPass" class="login-input" placeholder="Set secure password" style="padding-right:35px;">
+                    <span onclick="togglePassword('signPass')" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#64748b; font-size:16px; padding:5px;">👁️</span>
+                </div>
+            </div>
+            <button class="login-btn" style="background:var(--success);" onclick="executeSignUp()">Create Account</button>
+            <a class="login-link" onclick="toggleLoginView('viewLogin')">← Back to Sign In</a>
+        </div>
+
+        <div id="viewForgot" style="display:none;">
+            <div id="forgotMsg" class="login-error" style="color:var(--primary); background:#eef2ff; border-color:#c7d2fe;"></div>
+            <div class="login-form-group">
+                <label>Your User ID / Mobile Number</label>
+                <input type="text" id="forgotId" class="login-input" placeholder="Enter ID" autocomplete="off">
+            </div>
+            <div class="login-form-group">
+                <label>Your Recovery Email</label>
+                <input type="email" id="forgotEmail" class="login-input" placeholder="Enter linked email" autocomplete="off">
+            </div>
+            
+            <div id="resetNewPassSection" style="display:none; margin-top:15px; border-top:1px solid #e2e8f0; padding-top:15px;">
+                <div class="login-form-group">
+                    <label style="color:var(--success);">Set New Password</label>
+                    <div style="position:relative;">
+                        <input type="password" id="forgotNewPass" class="login-input" placeholder="Enter new password" style="padding-right:35px;">
+                        <span onclick="togglePassword('forgotNewPass')" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#64748b; font-size:16px; padding:5px;">👁️</span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="forgotBtn" class="login-btn" style="background:var(--warning);" onclick="executeForgot()">Verify Identity</button>
+            <a class="login-link" onclick="toggleLoginView('viewLogin')">← Back to Sign In</a>
+        </div>
     </div>
 </div>
 
-<div id="excelFilterPopup" style="display:none; position:absolute; z-index:1000000; background:var(--card); border:1px solid #cbd5e1; box-shadow:0 10px 25px rgba(0,0,0,0.2); border-radius:6px; width:240px; padding:10px; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: left;">
-    <div onclick="sortExcelTable('asc')" style="padding:6px; font-size:12px; cursor:pointer; font-weight:600; color:#334155; border-radius:4px; margin-bottom:2px; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='var(--accent)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='';">🔼 Sort A to Z</div>
-    <div onclick="sortExcelTable('desc')" style="padding:6px; font-size:12px; cursor:pointer; font-weight:600; color:#334155; border-radius:4px; border-bottom:1px solid #e2e8f0; margin-bottom:8px; padding-bottom:8px; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='var(--accent)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='';">🔽 Sort Z to A</div>
-    <div onclick="clearExcelFilter()" style="padding:6px; font-size:12px; cursor:pointer; font-weight:600; color:#ef4444; border-radius:4px; margin-bottom:8px; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">❌ Clear Filter</div>
-    <input type="text" id="excelSearchBox" placeholder="Search..." style="width:100%; box-sizing:border-box; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; margin-bottom:8px; outline:none; text-transform:none;" onkeyup="filterExcelList()">
-    <div style="padding-bottom:5px; border-bottom:1px solid #e2e8f0; margin-bottom:5px;"><label style="font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content: flex-start; gap:8px; color:#334155; margin:0;"><input type="checkbox" id="excelSelectAll" onchange="toggleAllExcel(this)" style="margin:0; width:14px; height:14px; cursor:pointer; flex-shrink:0;"> (Select All)</label></div>
-    <div id="excelChecklist" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; padding-right:5px;"></div>
-    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; border-top:1px solid #e2e8f0; padding-top:10px;"><button onclick="document.getElementById('excelFilterPopup').style.display='none'" style="background:#e2e8f0; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; color:#475569;">Cancel</button><button onclick="applyExcelFilter()" style="background:var(--accent); color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;">OK</button></div>
-</div>
+<div id="mainAppContent" class="app-wrapper">
 
-<div id="tdSuggestBox" class="suggestion-box" style="position: absolute; display: none; z-index: 1000000; box-shadow: 0 8px 20px rgba(0,0,0,0.3);"></div>
-<div id="toastNotification" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:var(--success); color:white; padding:12px 24px; border-radius:6px; font-size:14px; font-weight:800; z-index:9999999; box-shadow:0 10px 25px rgba(0,0,0,0.3); align-items:center; gap:15px;"><span id="toastText">Action completed.</span><button onclick="performUndo(); document.getElementById('toastNotification').style.display='none';" style="background:none; border:none; color:var(--primary); font-weight:900; cursor:pointer; font-size:14px; padding:0; text-transform: uppercase;">UNDO</button></div>
+    <div style="width: 100%; max-width: 1400px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <h1 style="margin: 0; color: var(--primary); font-size: 26px; font-weight: 900; letter-spacing: -0.5px;">DigiFleet <span style="font-weight: 400; font-size: 16px; color: #64748b;">| <span id="companyNameDisplay" onclick="promptCompanyName()" style="cursor: pointer; border-bottom: 1px dashed #94a3b8; padding-bottom: 2px;" title="Click to change company name">Your Company Name</span></span></h1>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <div style="position:relative;">
+                <button onclick="toggleAlerts()" style="background:none; border:none; font-size:22px; cursor:pointer; position:relative;" title="Action Needed Alerts">🔔<span id="alertBadge" style="display:none; position:absolute; top:-2px; right:-2px; background:#ef4444; color:white; font-size:10px; font-weight:bold; border-radius:50%; width:16px; height:16px; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);">0</span></button>
+                <div id="alertsDropdown" class="dropdown-menu" style="right:0; top:35px; width:300px; max-height:400px; overflow-y:auto; z-index:100000;">
+                    <div style="padding:10px; font-weight:bold; border-bottom:1px solid #e2e8f0; color:var(--primary); font-size:14px;">Action Needed Alerts</div>
+                    <div id="alertsList" style="padding:10px; font-size:12px; color:#64748b;">No alerts right now.</div>
+                </div>
+            </div>
+            <button onclick="toggleDarkMode()" style="background:none; border:none; font-size:22px; cursor:pointer;" title="Toggle Dark Mode">🌙</button>
+            <button onclick="exportBackup()" class="btn-icon" style="height:32px; font-size:12px; background:var(--success); color:white; border:none; box-shadow:0 2px 4px rgba(0,0,0,0.1);">💾 Backup</button>
+            <button onclick="document.getElementById('importBackup').click()" class="btn-icon" style="height:32px; font-size:12px; background:var(--accent); color:white; border:none; box-shadow:0 2px 4px rgba(0,0,0,0.1);">📂 Restore</button>
+            <input type="file" id="importBackup" accept=".json" style="display:none;" onchange="restoreBackup(event)">
+            <button onclick="executeLogout()" class="btn-icon" style="height:32px; font-size:12px; background:#ef4444; color:white; border:none; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-left:10px;">🚪 Logout</button>
+        </div>
+    </div>
 
-<div class="main-tabs">
-    <button id="tabInv" class="tab-btn active" onclick="switchToInventoryView()">📦 ERP Billing (Alt+1)</button>
-    <button id="tabTyre" class="tab-btn" onclick="switchToTyreView()">🛞 Tyre Management (Alt+2)</button>
-</div>
+    <div id="excelFilterPopup" style="display:none; position:absolute; z-index:1000000; background:var(--card); border:1px solid #cbd5e1; box-shadow:0 10px 25px rgba(0,0,0,0.2); border-radius:6px; width:240px; padding:10px; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: left;">
+        <div onclick="sortExcelTable('asc')" class="popup-menu-item" style="margin-bottom:2px;">🔼 Sort A to Z</div>
+        <div onclick="sortExcelTable('desc')" class="popup-menu-item" style="border-bottom:1px solid #e2e8f0; margin-bottom:8px; padding-bottom:8px;">🔽 Sort Z to A</div>
+        <div onclick="clearExcelFilter()" class="popup-menu-item" style="color:#ef4444; margin-bottom:8px;" onmouseover="this.style.background='#fee2e2'; this.style.color='#ef4444';" onmouseout="this.style.background='transparent'; this.style.color='#ef4444';">❌ Clear Filter</div>
+        <input type="text" id="excelSearchBox" placeholder="Search..." style="width:100%; box-sizing:border-box; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; margin-bottom:8px; outline:none; text-transform:none;" onkeyup="filterExcelList()">
+        <div style="padding-bottom:5px; border-bottom:1px solid #e2e8f0; margin-bottom:5px;"><label class="tree-label-text" style="font-weight:600;"><input type="checkbox" id="excelSelectAll" onchange="toggleAllExcel(this)" style="margin:0; cursor:pointer;"> (Select All)</label></div>
+        <div id="excelChecklist" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:0; padding-right:5px;"></div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; border-top:1px solid #e2e8f0; padding-top:10px;"><button onclick="document.getElementById('excelFilterPopup').style.display='none'" style="background:#e2e8f0; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; color:#475569;">Cancel</button><button onclick="applyExcelFilter()" style="background:var(--accent); color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;">OK</button></div>
+    </div>
 
-<div id="inventoryView" class="app-container" style="display: block;">
-    <div class="header">
-        <h2>Invoice Data Entry</h2>
-        <div class="action-bar">
-            <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
-            <button class="btn-icon" onclick="openExportModal('inv')" title="Print & Export (Alt+E)">🖨️ Export</button>
-            <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
-            <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
-            <button class="btn-add" onclick="openHeadingModal()">+ Custom Heading</button>
-            <button class="dot-btn" onclick="toggleMenu('invMenu')">⋮</button>
-            <div id="invMenu" class="dropdown-menu">
-                <a onclick="switchToAllBillsView()">📂 View All Bills (Alt+5)</a>
-                <a onclick="switchToPartyView()">👥 Party Master Directory (Alt+4)</a>
-                <a onclick="switchToDashboardView()">📊 Purchase Dashboard (Alt+3)</a>
+    <div id="tdSuggestBox" class="suggestion-box" style="position: absolute; display: none; z-index: 1000000; box-shadow: 0 8px 20px rgba(0,0,0,0.3);"></div>
+    <div id="toastNotification" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:var(--success); color:white; padding:12px 24px; border-radius:6px; font-size:14px; font-weight:800; z-index:9999999; box-shadow:0 10px 25px rgba(0,0,0,0.3); align-items:center; gap:15px;"><span id="toastText">Action completed.</span><button onclick="performUndo(); document.getElementById('toastNotification').style.display='none';" style="background:none; border:none; color:var(--primary); font-weight:900; cursor:pointer; font-size:14px; padding:0; text-transform: uppercase;">UNDO</button></div>
+
+    <div class="main-tabs">
+        <button id="tabInv" class="tab-btn active" onclick="switchToInventoryView()">📦 ERP Billing (Alt+1)</button>
+        <button id="tabTyre" class="tab-btn" onclick="switchToTyreView()">🛞 Tyre Management (Alt+2)</button>
+    </div>
+
+    <div id="inventoryView" class="app-container" style="display: block;">
+        <div class="header">
+            <h2>Invoice Data Entry</h2>
+            <div class="action-bar">
+                <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
+                <button class="btn-icon" onclick="openExportModal('inv')" title="Print & Export (Alt+E)">🖨️ Export</button>
+                <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
+                <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
+                <button class="btn-add" onclick="openHeadingModal()">+ Custom Heading</button>
+                <button class="dot-btn" onclick="toggleMenu('invMenu')">⋮</button>
+                <div id="invMenu" class="dropdown-menu">
+                    <a onclick="switchToAllBillsView()">📂 View All Bills (Alt+5)</a>
+                    <a onclick="switchToPartyView()">👥 Party Master Directory (Alt+4)</a>
+                    <a onclick="switchToDashboardView()">📊 Purchase Dashboard (Alt+3)</a>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="erp-section" id="headerGrid">
-        <h3 class="erp-section-title">1. Invoice Details (Type Once)</h3>
-        <div class="form-grid grid-header">
-            <div class="input-group"><label>Date (Alt+D)</label><div class="date-input-wrapper"><input type="search" id="invDate" placeholder="10-12-26" autocomplete="off" onblur="formatDate(this)"><input type="date" onchange="syncDate(this, 'invDate')" tabindex="-1"></div></div>
-            <div class="input-group"><label>Bill No</label><input type="search" id="billNo" autocomplete="off"></div>
-            <div class="input-group"><label>Vehicle No (Optional)</label><div class="input-wrapper"><input type="search" id="invVehicle" autocomplete="off" placeholder="MH-01..." onkeyup="handleSuggest(this, 'vehicle', event)" onfocus="handleSuggest(this, 'vehicle', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('invVehicle', 'vehicle')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><label>Purchase Party (Alt+P)</label><div class="input-wrapper"><input type="search" id="pParty" autocomplete="off" placeholder="Select Party..." onkeyup="handleSuggest(this, 'party', event)" onfocus="handleSuggest(this, 'party', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('pParty', 'party')">▼</span><div class="suggestion-box"></div></div></div>
+        <div class="erp-section" id="headerGrid">
+            <h3 class="erp-section-title">1. Invoice Details (Type Once)</h3>
+            <div class="form-grid grid-header">
+                <div class="input-group"><label>Date (Alt+D)</label><div class="date-input-wrapper"><input type="search" id="invDate" placeholder="10-12-26" autocomplete="off" onblur="formatDate(this)"><input type="date" onchange="syncDate(this, 'invDate')" tabindex="-1"></div></div>
+                <div class="input-group"><label>Bill No</label><input type="search" id="billNo" autocomplete="off"></div>
+                <div class="input-group"><label>Vehicle No (Optional)</label><div class="input-wrapper"><input type="search" id="invVehicle" autocomplete="off" placeholder="MH-01..." onkeyup="handleSuggest(this, 'vehicle', event)" onfocus="handleSuggest(this, 'vehicle', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('invVehicle', 'vehicle')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><label>Purchase Party (Alt+P)</label><div class="input-wrapper"><input type="search" id="pParty" autocomplete="off" placeholder="Select Party..." onkeyup="handleSuggest(this, 'party', event)" onfocus="handleSuggest(this, 'party', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('pParty', 'party')">▼</span><div class="suggestion-box"></div></div></div>
+            </div>
         </div>
-    </div>
-    <div class="erp-section">
-        <h3 class="erp-section-title">2. Add Products</h3>
-        <div class="form-grid" style="grid-template-columns: 2fr 0.6fr 1fr 1fr 1fr 1fr auto;">
-            <div class="input-group"><label>Product Name</label><div class="input-wrapper"><input type="search" id="pName" autocomplete="off" placeholder="Type product..." onkeyup="handleSuggest(this, 'product', event)" onfocus="handleSuggest(this, 'product', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('pName', 'product')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><label>Qty</label><input type="number" id="qty" autocomplete="off" value="1" onfocus="this.select()" oninput="calcInvoiceItemTotal()"></div>
-            <div class="input-group"><label>Base Rate</label><input type="number" id="base" autocomplete="off" oninput="calcInvoiceItemTotal()"></div>
-            <div class="input-group"><label>Total Amt</label><input type="text" id="itemTotal" autocomplete="off" readonly style="background:var(--bg); color:var(--accent); font-weight:bold;"></div>
-            <div class="input-group"><label>GST %</label><select id="gst" autocomplete="off" onchange="calcInvoiceItemTotal()"><option value="18">18%</option><option value="12">12%</option><option value="5">5%</option><option value="28">28%</option><option value="0">0%</option></select></div>
-            <div class="input-group"><label>Status</label><div class="input-wrapper"><input type="search" id="status" autocomplete="off" placeholder="New / Scrap" onkeyup="handleSuggest(this, 'status', event)" onfocus="handleSuggest(this, 'status', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('status', 'status')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><button class="btn-add-item" id="btnAddItem" onclick="addInvoiceItem()">+ Add (Enter)</button></div>
+        <div class="erp-section">
+            <h3 class="erp-section-title">2. Add Products</h3>
+            <div class="form-grid" style="grid-template-columns: 2fr 0.6fr 1fr 1fr 1fr 1fr auto;">
+                <div class="input-group"><label>Product Name</label><div class="input-wrapper"><input type="search" id="pName" autocomplete="off" placeholder="Type product..." onkeyup="handleSuggest(this, 'product', event)" onfocus="handleSuggest(this, 'product', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('pName', 'product')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><label>Qty</label><input type="number" id="qty" autocomplete="off" value="1" onfocus="this.select()" oninput="calcInvoiceItemTotal()"></div>
+                <div class="input-group"><label>Base Rate</label><input type="number" id="base" autocomplete="off" oninput="calcInvoiceItemTotal()"></div>
+                <div class="input-group"><label>Total Amt</label><input type="text" id="itemTotal" autocomplete="off" readonly style="background:var(--bg); color:var(--accent); font-weight:bold;"></div>
+                <div class="input-group"><label>GST %</label><select id="gst" autocomplete="off" onchange="calcInvoiceItemTotal()"><option value="18">18%</option><option value="12">12%</option><option value="5">5%</option><option value="28">28%</option><option value="0">0%</option></select></div>
+                <div class="input-group"><label>Status</label><div class="input-wrapper"><input type="search" id="status" autocomplete="off" placeholder="New / Scrap" onkeyup="handleSuggest(this, 'status', event)" onfocus="handleSuggest(this, 'status', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('status', 'status')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><button class="btn-add-item" id="btnAddItem" onclick="addInvoiceItem()">+ Add (Enter)</button></div>
+            </div>
+            <table class="mini-table" id="miniTable"><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>GST%</th><th>Tax Amt</th><th>Net Total</th><th>Status</th><th>Del</th></tr></thead><tbody id="miniTableBody"></tbody></table>
+            <div class="invoice-totals"><div style="color:#64748b;">Total GST: <span id="invTotalGst" style="color:var(--primary);">₹0.00</span></div><div>Invoice Total: <span id="invGrandTotal">₹0.00</span></div></div>
         </div>
-        <table class="mini-table" id="miniTable"><thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>GST%</th><th>Tax Amt</th><th>Net Total</th><th>Status</th><th>Del</th></tr></thead><tbody id="miniTableBody"></tbody></table>
-        <div class="invoice-totals"><div style="color:#64748b;">Total GST: <span id="invTotalGst" style="color:var(--primary);">₹0.00</span></div><div>Invoice Total: <span id="invGrandTotal">₹0.00</span></div></div>
-    </div>
-    <button class="btn-save-invoice" id="saveInvoiceBtn" onclick="saveFullInvoice()">✔️ Save Complete Invoice (Alt+S)</button>
+        <button class="btn-save-invoice" id="saveInvoiceBtn" onclick="saveFullInvoice()">✔️ Save Complete Invoice (Alt+S)</button>
 
-    <h3 style="margin-top: 25px; margin-bottom: 5px; font-size: 14px; color: var(--primary);">RECENT 10 ENTRIES</h3>
-    <div id="homeTableHost">
-        <div class="table-container limit-10" id="sharedInvTableContainer">
+        <h3 style="margin-top: 25px; margin-bottom: 5px; font-size: 14px; color: var(--primary);">RECENT 10 ENTRIES</h3>
+        <div id="homeTableHost">
+            <div class="table-container limit-10" id="sharedInvTableContainer">
+                <table class="main-table">
+                    <thead id="tableHead"><tr>
+                        <th><div>Sr</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>Date</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>Bill No</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>Vehicle</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>Party</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>Product</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>Qty</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>Base Rate</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>GST%</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>Total</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th><div>Status</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
+                        <th>Act</th>
+                    </tr></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <button class="btn-home" style="width: 100%; margin-top: 15px; padding: 12px;" onclick="switchToAllBillsView()">📂 View All Bills History</button>
+    </div>
+
+    <div id="allBillsView" class="app-container full-view" style="display: none;">
+        <div class="header" style="margin-bottom: 5px;">
+            <h2>📂 All Entered Bills</h2>
+            <div class="action-bar">
+                <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
+                <button class="btn-icon" onclick="openExportModal('inv')" title="Print & Export (Alt+E)">🖨️ Export</button>
+                <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
+                <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
+                <button class="btn-add" onclick="openHeadingModal()">+ Add Column</button>
+                <button class="btn-home" onclick="switchToInventoryView()">← Back to Entry</button>
+            </div>
+        </div>
+        <div id="allBillsTableHost"></div>
+    </div>
+
+    <div id="tyreView" class="app-container" style="display: none;">
+        <div class="header">
+            <h2>Tyre Fitting & Tracking</h2>
+            <div class="action-bar">
+                <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
+                <button class="btn-icon" onclick="openExportModal('tyre')" title="Print & Export (Alt+E)">🖨️ Export</button>
+                <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
+                <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
+                <button class="dot-btn" onclick="toggleMenu('tyreMenu')">⋮</button>
+                <div id="tyreMenu" class="dropdown-menu">
+                    <a onclick="openDaysCalculatorModal()">📅 Lifecycle Calculator (Alt+C)</a>
+                    <a onclick="switchToTyreDashboardView()">📊 Tyre Analytics (Alt+8)</a>
+                    <a onclick="switchToAllTyresView()">📂 View All Tyres (Alt+6)</a>
+                    <a onclick="switchToPartyView()">👥 Party Master Directory (Alt+4)</a>
+                    <a onclick="switchToDashboardView()">📊 Purchase Dashboard (Alt+3)</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="erp-section" id="tyreFormGrid">
+            <h3 class="erp-section-title">1. Bill Details (Type Once)</h3>
+            <div class="form-grid grid-header">
+                <div class="input-group"><label>Date (Alt+D)</label><div class="date-input-wrapper"><input type="search" id="tDate" placeholder="10-12-26" autocomplete="off" onblur="formatDate(this)"><input type="date" onchange="syncDate(this, 'tDate')" tabindex="-1"></div></div>
+                <div class="input-group"><label>Vehicle No</label><div class="input-wrapper"><input type="search" id="tVehicle" autocomplete="off" onkeyup="handleSuggest(this, 'vehicle', event)" onfocus="handleSuggest(this, 'vehicle', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tVehicle', 'vehicle')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><label>Invoice No</label><input type="search" id="tInvoice" autocomplete="off"></div>
+                <div class="input-group"><label>Purchase Party (Alt+P)</label><div class="input-wrapper"><input type="search" id="tParty" autocomplete="off" placeholder="Select Party..." onkeyup="handleSuggest(this, 'party', event)" onfocus="handleSuggest(this, 'party', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tParty', 'party')">▼</span><div class="suggestion-box"></div></div></div>
+            </div>
+        </div>
+        <div class="erp-section">
+            <h3 class="erp-section-title">2. Add Tyres</h3>
+            <div class="form-grid" style="grid-template-columns: 1.2fr 1fr 1.2fr 1fr 1fr 1fr 1.5fr 1.5fr auto;">
+                <div class="input-group"><label>New Tyre No</label><div class="input-wrapper"><input type="search" id="tNewTyre" autocomplete="off" onkeyup="handleSuggest(this, 'tyre', event)" onfocus="handleSuggest(this, 'tyre', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tNewTyre', 'tyre')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><label>New KM</label><input type="number" id="tNewKM" autocomplete="off" oninput="calcRunKM()"></div>
+                <div class="input-group"><label>Old Tyre No</label><div class="input-wrapper"><input type="search" id="tOldTyre" autocomplete="off" placeholder="MISSING" onkeyup="handleSuggest(this, 'tyre', event)" onfocus="handleSuggest(this, 'tyre', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tOldTyre', 'tyre')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><label>Old KM</label><input type="number" id="tOldKM" autocomplete="off" oninput="calcRunKM()"></div>
+                <div class="input-group"><label>Run KM (Auto)</label><input type="text" id="tRunKM" autocomplete="off" readonly style="background:var(--bg); color:var(--accent); font-weight:bold;"></div>
+                <div class="input-group"><label>Days Run</label><input type="number" id="tDays" autocomplete="off" placeholder="e.g. 45"></div>
+                <div class="input-group"><label>Old Tyre Status</label><div class="input-wrapper"><input type="search" id="tStatus" autocomplete="off" placeholder="Select..." onkeyup="handleSuggest(this, 'tyreStatus', event)" onfocus="handleSuggest(this, 'tyreStatus', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tStatus', 'tyreStatus')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><label>Remark</label><input type="search" id="tRemark" autocomplete="off"></div>
+                <div class="input-group"><button class="btn-add-item" id="btnAddTyreItem" onclick="addTyreItem()">+ Add (Enter)</button></div>
+            </div>
+            <table class="mini-table" id="tyreMiniTable"><thead><tr><th>New Tyre</th><th>New KM</th><th>Old Tyre</th><th>Old KM</th><th>Run KM</th><th>Days</th><th>Status</th><th>Remark</th><th>Del</th></tr></thead><tbody id="tyreMiniTableBody"></tbody></table>
+        </div>
+
+        <button class="btn-save-invoice" style="margin-top: 15px;" onclick="saveFullTyreEntry()" id="saveTyreBtn">✔️ Save Complete Tyre Entry (Alt+S)</button>
+
+        <h3 style="margin-top: 25px; margin-bottom: 5px; font-size: 14px; color: var(--primary);">RECENT 10 ENTRIES</h3>
+        <div id="tyreHomeTableHost">
+            <div class="table-container limit-10" id="sharedTyreTableContainer">
+                <table class="main-table">
+                    <thead id="tyreTableHead"><tr>
+                        <th><div>Date</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>Vehicle</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>Invoice</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>Party</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>New Tyre</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>New KM</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>Old Tyre</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>Old KM</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>Run KM</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>Days</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>Status</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th><div>Remark</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
+                        <th>Act</th>
+                    </tr></thead>
+                    <tbody id="tyreTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <button class="btn-home" style="width: 100%; margin-top: 15px; padding: 12px;" onclick="switchToAllTyresView()">📂 View All Tyre History</button>
+    </div>
+
+    <div id="allTyresView" class="app-container full-view" style="display: none;">
+        <div class="header" style="margin-bottom: 5px;">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <h2>📂 All Entered Tyres</h2>
+                <div style="display:flex; align-items:center; background:var(--card); border:2px solid var(--accent); border-radius:6px; padding:2px 8px; box-shadow:0 2px 5px rgba(59,130,246,0.2);">
+                    <span style="font-size:14px;">🔍</span>
+                    <input type="search" id="globalTyreSearch" placeholder="Find Tyre No. Anywhere..." style="border:none; box-shadow:none; padding:6px; width:220px; font-weight:bold; color:var(--primary); background:transparent;" onkeyup="applyGlobalTyreSearch()">
+                </div>
+                <span id="tyreSearchCountDisplay" style="font-size:12px; font-weight:bold; color:var(--warning);"></span>
+            </div>
+            <div class="action-bar">
+                <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
+                <button class="btn-icon" onclick="openExportModal('tyre')" title="Print & Export (Alt+E)">🖨️ Export</button>
+                <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
+                <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
+                <button class="btn-home" onclick="switchToTyreView()">← Back to Entry</button>
+            </div>
+        </div>
+        <div id="allTyresTableHost"></div>
+    </div>
+
+    <div id="tyreStockView" class="app-container full-view" style="display: none;">
+        <div class="header">
+            <h2>🛞 Smart Tyre Stock Inventory</h2>
+            <div class="action-bar">
+                <button class="btn-home" onclick="switchToAllTyresView()">← Back to Tyres</button>
+            </div>
+        </div>
+        <div class="metrics-row" style="margin-bottom: 15px; gap:10px;">
+            <div class="metric-card metric-success" style="padding: 15px;"><h3 style="font-size:11px; margin-bottom:5px;">🟢 Ready to Use</h3><p class="value" id="stockReady" style="font-size:20px;">0</p></div>
+            <div class="metric-card metric-warning" style="padding: 15px;"><h3 style="font-size:11px; margin-bottom:5px;">🟡 Action Needed / At Vendor</h3><p class="value" id="stockAction" style="font-size:20px;">0</p></div>
+            <div class="metric-card" style="padding: 15px; border-left-color:#ef4444;"><h3 style="font-size:11px; margin-bottom:5px;">🔴 Dead / Scrap / Sold</h3><p class="value" id="stockDead" style="font-size:20px;">0</p></div>
+            <div class="metric-card metric-primary" style="padding: 15px;"><h3 style="font-size:11px; margin-bottom:5px;">🔵 Total Inventory</h3><p class="value" id="stockTotal" style="font-size:20px;">0</p></div>
+        </div>
+        <div class="erp-section" style="margin-bottom: 10px;">
+            <h3 class="erp-section-title">Manual Stock Entry (Add New Tyres)</h3>
+            <div class="form-grid" style="grid-template-columns: 1fr 1.5fr 1fr 1fr 1.5fr auto;">
+                <div class="input-group"><label>Date</label><div class="date-input-wrapper"><input type="search" id="stkDate" placeholder="DD-MM-YY" autocomplete="off" onblur="formatDate(this)"><input type="date" onchange="syncDate(this, 'stkDate')" tabindex="-1"></div></div>
+                <div class="input-group"><label>Tyre No</label><div class="input-wrapper"><input type="search" id="stkTyre" autocomplete="off" onkeyup="handleSuggest(this, 'tyre', event)" onfocus="handleSuggest(this, 'tyre', {forceAll:true})"><span class="dropdown-icon" onclick="toggleSuggest('stkTyre', 'tyre')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><label>Vehicle Out (Optional)</label><div class="input-wrapper"><input type="search" id="stkVeh" autocomplete="off" onkeyup="handleSuggest(this, 'vehicle', event)" onfocus="handleSuggest(this, 'vehicle', {forceAll:true})"><span class="dropdown-icon" onclick="toggleSuggest('stkVeh', 'vehicle')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><label>Status</label><div class="input-wrapper"><input type="search" id="stkStatus" autocomplete="off" placeholder="NEW STOCK" onkeyup="handleSuggest(this, 'tyreStatus', event)" onfocus="handleSuggest(this, 'tyreStatus', {forceAll:true})"><span class="dropdown-icon" onclick="toggleSuggest('stkStatus', 'tyreStatus')">▼</span><div class="suggestion-box"></div></div></div>
+                <div class="input-group"><label>Remark</label><input type="search" id="stkRemark" autocomplete="off"></div>
+                <div class="input-group"><button class="btn-add-item" id="btnAddStock" onclick="addManualStock()">+ Add Stock</button></div>
+            </div>
+        </div>
+        <div class="table-container" style="flex:1;">
             <table class="main-table">
-                <thead id="tableHead"><tr>
-                    <th><div>Sr</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>Date</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>Bill No</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>Vehicle</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>Party</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>Product</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>Qty</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>Base Rate</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>GST%</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>Total</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th><div>Status</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tableBody')">🔍 Filter</button></th>
-                    <th>Act</th>
-                </tr></thead>
-                <tbody id="tableBody"></tbody>
+                <thead><tr><th style="min-width: 100px;">Date</th><th>Tyre No</th><th>Vehicle (Out From)</th><th>Current Status</th><th>Remark</th><th>Source Type</th><th>Actions</th></tr></thead>
+                <tbody id="stockTableBody"></tbody>
             </table>
         </div>
     </div>
-    <button class="btn-home" style="width: 100%; margin-top: 15px; padding: 12px;" onclick="switchToAllBillsView()">📂 View All Bills History</button>
-</div>
 
-<div id="allBillsView" class="app-container full-view" style="display: none;">
-    <div class="header" style="margin-bottom: 5px;">
-        <h2>📂 All Entered Bills</h2>
-        <div class="action-bar">
-            <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
-            <button class="btn-icon" onclick="openExportModal('inv')" title="Print & Export (Alt+E)">🖨️ Export</button>
-            <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
-            <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
-            <button class="btn-add" onclick="openHeadingModal()">+ Add Column</button>
-            <button class="btn-home" onclick="switchToInventoryView()">← Back to Entry</button>
+    <div id="partyView" class="app-container" style="display: none;">
+        <div class="header"><h2>👥 Party Directory</h2><button class="btn-home" onclick="switchToInventoryView()">← Back to Bills</button></div>
+        <div class="party-controls">
+            <div class="input-group" style="flex:1;"><input type="search" id="partySearch" placeholder="Search Party..." autocomplete="off" onkeyup="renderPartyFullList()"></div>
+            <button class="btn-add-item" style="width: auto; margin: 0; padding: 8px 15px;" onclick="openAddPartyModal()">+ Add Party</button>
         </div>
+        <div id="partyListContainer" class="party-grid"></div>
     </div>
-    <div id="allBillsTableHost"></div>
-</div>
 
-<div id="tyreView" class="app-container" style="display: none;">
-    <div class="header">
-        <h2>Tyre Fitting & Tracking</h2>
-        <div class="action-bar">
-            <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
-            <button class="btn-icon" onclick="openExportModal('tyre')" title="Print & Export (Alt+E)">🖨️ Export</button>
-            <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
-            <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
-            <button class="dot-btn" onclick="toggleMenu('tyreMenu')">⋮</button>
-            <div id="tyreMenu" class="dropdown-menu">
-                <a onclick="openDaysCalculatorModal()">📅 Lifecycle Calculator (Alt+C)</a>
-                <a onclick="switchToTyreDashboardView()">📊 Tyre Analytics (Alt+8)</a>
-                <a onclick="switchToAllTyresView()">📂 View All Tyres (Alt+6)</a>
-                <a onclick="switchToPartyView()">👥 Party Master Directory (Alt+4)</a>
-                <a onclick="switchToDashboardView()">📊 Purchase Dashboard (Alt+3)</a>
+    <div id="dashboardView" class="app-container" style="display: none;">
+        <div class="header" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+                <h2>📊 Purchase Analytics Dashboard</h2>
+                <button class="btn-home" onclick="switchToInventoryView()">← Back to Bills</button>
+            </div>
+            <div style="display:flex; gap: 10px; flex-wrap: wrap; width: 100%; align-items: center;" id="dashFiltersContainer">
+                <input type="search" id="dashGlobalFilter" placeholder="Filter by Party Name..." autocomplete="off" onkeyup="renderDashboard()" style="width: 200px; padding: 6px 10px; border-radius:4px; border:1px solid #cbd5e1; font-size:12px;">
+                <div id="dashCustomFilters" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
             </div>
         </div>
-    </div>
-    
-    <div class="erp-section" id="tyreFormGrid">
-        <h3 class="erp-section-title">1. Bill Details (Type Once)</h3>
-        <div class="form-grid grid-header">
-            <div class="input-group"><label>Date (Alt+D)</label><div class="date-input-wrapper"><input type="search" id="tDate" placeholder="10-12-26" autocomplete="off" onblur="formatDate(this)"><input type="date" onchange="syncDate(this, 'tDate')" tabindex="-1"></div></div>
-            <div class="input-group"><label>Vehicle No</label><div class="input-wrapper"><input type="search" id="tVehicle" autocomplete="off" onkeyup="handleSuggest(this, 'vehicle', event)" onfocus="handleSuggest(this, 'vehicle', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tVehicle', 'vehicle')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><label>Invoice No</label><input type="search" id="tInvoice" autocomplete="off"></div>
-            <div class="input-group"><label>Purchase Party (Alt+P)</label><div class="input-wrapper"><input type="search" id="tParty" autocomplete="off" placeholder="Select Party..." onkeyup="handleSuggest(this, 'party', event)" onfocus="handleSuggest(this, 'party', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tParty', 'party')">▼</span><div class="suggestion-box"></div></div></div>
+        <div class="metrics-row">
+            <div class="metric-card"><h3>Total Purchase Value</h3><p class="value" id="dashMetricTotal">₹0</p></div>
+            <div class="metric-card metric-primary"><h3>Total Invoices</h3><p class="value" id="dashMetricCount">0</p></div>
+            <div class="metric-card metric-success"><h3>Average Bill Value</h3><p class="value" id="dashMetricAvg">₹0</p></div>
+            <div class="metric-card metric-warning"><h3>Top Supplier</h3><p class="value" id="dashMetricTopParty" style="font-size: 20px;">-</p></div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-container"><h3>Spending by Party (Top 10)</h3><div id="dashChartParty"></div></div>
+            <div class="chart-container"><h3>Monthly Expenditure Trend</h3><div id="dashChartMonth"></div></div>
         </div>
     </div>
-    <div class="erp-section">
-        <h3 class="erp-section-title">2. Add Tyres</h3>
-        <div class="form-grid" style="grid-template-columns: 1.2fr 1fr 1.2fr 1fr 1fr 1fr 1.5fr 1.5fr auto;">
-            <div class="input-group"><label>New Tyre No</label><div class="input-wrapper"><input type="search" id="tNewTyre" autocomplete="off" onkeyup="handleSuggest(this, 'tyre', event)" onfocus="handleSuggest(this, 'tyre', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tNewTyre', 'tyre')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><label>New KM</label><input type="number" id="tNewKM" autocomplete="off" oninput="calcRunKM()"></div>
-            <div class="input-group"><label>Old Tyre No</label><div class="input-wrapper"><input type="search" id="tOldTyre" autocomplete="off" placeholder="MISSING" onkeyup="handleSuggest(this, 'tyre', event)" onfocus="handleSuggest(this, 'tyre', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tOldTyre', 'tyre')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><label>Old KM</label><input type="number" id="tOldKM" autocomplete="off" oninput="calcRunKM()"></div>
-            <div class="input-group"><label>Run KM (Auto)</label><input type="text" id="tRunKM" autocomplete="off" readonly style="background:var(--bg); color:var(--accent); font-weight:bold;"></div>
-            <div class="input-group"><label>Days Run</label><input type="number" id="tDays" autocomplete="off" placeholder="e.g. 45"></div>
-            <div class="input-group"><label>Old Tyre Status</label><div class="input-wrapper"><input type="search" id="tStatus" autocomplete="off" placeholder="Select..." onkeyup="handleSuggest(this, 'tyreStatus', event)" onfocus="handleSuggest(this, 'tyreStatus', {forceAll: true})"><span class="dropdown-icon" onclick="toggleSuggest('tStatus', 'tyreStatus')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><label>Remark</label><input type="search" id="tRemark" autocomplete="off"></div>
-            <div class="input-group"><button class="btn-add-item" id="btnAddTyreItem" onclick="addTyreItem()">+ Add (Enter)</button></div>
-        </div>
-        <table class="mini-table" id="tyreMiniTable"><thead><tr><th>New Tyre</th><th>New KM</th><th>Old Tyre</th><th>Old KM</th><th>Run KM</th><th>Days</th><th>Status</th><th>Remark</th><th>Del</th></tr></thead><tbody id="tyreMiniTableBody"></tbody></table>
-    </div>
 
-    <button class="btn-save-invoice" style="margin-top: 15px;" onclick="saveFullTyreEntry()" id="saveTyreBtn">✔️ Save Complete Tyre Entry (Alt+S)</button>
-
-    <h3 style="margin-top: 25px; margin-bottom: 5px; font-size: 14px; color: var(--primary);">RECENT 10 ENTRIES</h3>
-    <div id="tyreHomeTableHost">
-        <div class="table-container limit-10" id="sharedTyreTableContainer">
-            <table class="main-table">
-                <thead id="tyreTableHead"><tr>
-                    <th><div>Date</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>Vehicle</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>Invoice</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>Party</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>New Tyre</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>New KM</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>Old Tyre</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>Old KM</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>Run KM</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>Days</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>Status</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th><div>Remark</div><button class="tbl-filter-btn" onclick="openExcelFilter(event, this, 'tyreTableBody')">🔍 Filter</button></th>
-                    <th>Act</th>
-                </tr></thead>
-                <tbody id="tyreTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-    <button class="btn-home" style="width: 100%; margin-top: 15px; padding: 12px;" onclick="switchToAllTyresView()">📂 View All Tyre History</button>
-</div>
-
-<div id="allTyresView" class="app-container full-view" style="display: none;">
-    <div class="header" style="margin-bottom: 5px;">
-        <div style="display:flex; align-items:center; gap:15px;">
-            <h2>📂 All Entered Tyres</h2>
-            <div style="display:flex; align-items:center; background:var(--card); border:2px solid var(--accent); border-radius:6px; padding:2px 8px; box-shadow:0 2px 5px rgba(59,130,246,0.2);">
-                <span style="font-size:14px;">🔍</span>
-                <input type="search" id="globalTyreSearch" placeholder="Find Tyre No. Anywhere..." style="border:none; box-shadow:none; padding:6px; width:220px; font-weight:bold; color:var(--primary); background:transparent;" onkeyup="applyGlobalTyreSearch()">
+    <div id="tyreDashboardView" class="app-container" style="display: none;">
+        <div class="header">
+            <h2>📊 Tyre Analytics Dashboard</h2>
+            <div style="display:flex; gap: 15px;">
+                <input type="search" id="tyreDashGlobalFilter" placeholder="Filter by Vehicle No..." autocomplete="off" onkeyup="renderTyreDashboard()" style="width: 250px; padding: 8px 12px; border-radius:4px; border:1px solid #cbd5e1;">
+                <button class="btn-home" onclick="switchToTyreView()">← Back to Tyres</button>
             </div>
-            <span id="tyreSearchCountDisplay" style="font-size:12px; font-weight:bold; color:var(--warning);"></span>
         </div>
-        <div class="action-bar">
-            <button class="btn-icon" onclick="switchToTyreStock()" title="Tyre Stock (Alt+7)">🛞 Stock</button>
-            <button class="btn-icon" onclick="openExportModal('tyre')" title="Print & Export (Alt+E)">🖨️ Export</button>
-            <button class="btn-icon" style="font-size: 16px;" onclick="performUndo()" title="Undo Action (Ctrl+Z)">↩</button>
-            <button class="btn-icon" style="font-size: 16px;" onclick="performRedo()" title="Redo Action (Ctrl+Y)">↪</button>
-            <button class="btn-home" onclick="switchToTyreView()">← Back to Entry</button>
+        <div class="metrics-row">
+            <div class="metric-card"><h3>Total Tyres Replaced</h3><p class="value" id="tyreDashMetricTotal">0</p></div>
+            <div class="metric-card metric-primary"><h3>Avg Run KM</h3><p class="value" id="tyreDashMetricAvgKM">0</p></div>
+            <div class="metric-card metric-success"><h3>Avg Days Run</h3><p class="value" id="tyreDashMetricAvgDays">0</p></div>
+            <div class="metric-card metric-warning"><h3>Highest Consumption Veh</h3><p class="value" id="tyreDashMetricTopVeh" style="font-size: 20px;">-</p></div>
+            <div class="metric-card" style="border-left-color: #8b5cf6;"><h3>Total Tyres Sold</h3><p class="value" id="tyreDashMetricSold">0</p></div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-container"><h3>Tyre Changes by Vehicle (Top 10)</h3><div id="tyreDashChartVeh"></div></div>
+            <div class="chart-container"><h3>Monthly Replacement Trend</h3><div id="tyreDashChartMonth"></div></div>
         </div>
     </div>
-    <div id="allTyresTableHost"></div>
+
+    <div id="companyNameModal" class="modal-overlay" style="z-index: 1000001;"><div class="modal-content" style="max-width: 400px;"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">🏢 Set Company Name</h2></div><div class="input-group" style="margin-bottom: 20px;"><label>Company Name</label><input type="search" id="newCompanyNameInput" autocomplete="off" placeholder="Enter Company Name"></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="document.getElementById('companyNameModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="executeSetCompanyName()">Save</button></div></div></div>
+
+    <div id="daysCalcModal" class="modal-overlay" style="z-index: 1000000;"><div class="modal-content" style="max-width: 450px;"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">⏱️ Lifecycle Duration Calculator</h2></div><div class="form-grid" style="grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 15px;"><div class="input-group"><label>Installation Date</label><div class="date-input-wrapper"><input type="search" id="calcFittedDate" placeholder="DD-MM-YY" autocomplete="off" onblur="formatDate(this)"></div></div><div class="input-group"><label>Dismount Date</label><div class="date-input-wrapper"><input type="search" id="calcRemovedDate" placeholder="DD-MM-YY" autocomplete="off" onblur="formatDate(this)"></div></div></div><label style="margin-bottom:15px; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:12px; font-weight:700; color:var(--accent);"><input type="checkbox" id="useCurrentDateCheck" onchange="toggleCurrentDate(this)" style="width:auto; margin:0;"> Sync Dismount Date with Invoice Date</label><div style="background:var(--bg); padding:15px; border-radius:6px; border:1px solid #c7d2fe; text-align:center; margin-bottom:20px;"><div style="font-size:11px; color:#64748b; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">Total Duration</div><div id="calcResultDisplay" style="font-size:16px; font-weight:800; color:var(--accent);">-</div><div id="calcResultYMD" style="font-size:12px; color:#475569; margin-top:5px; font-weight:600;">(0 Yrs, 0 Mos, 0 Days)</div></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="btn-icon" style="color:var(--primary); border:1px solid #cbd5e1;" onclick="doCalcDays()">🔄 See Life Cycle (Enter)</button><button class="close-btn" onclick="document.getElementById('daysCalcModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="applyDaysCalc()">✔️ Apply Days</button></div></div></div>
+
+    <div id="exportModal" class="modal-overlay"><div class="modal-content" style="max-width: 700px;"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">🖨️ Generate Report & Export</h2></div><div class="form-grid" style="grid-template-columns: 1fr 1fr;"><div class="input-group"><label>Vehicle No</label><div class="input-wrapper"><input type="search" id="expVehicle" onkeyup="handleMultiSuggest(this, 'vehicle', event)" onfocus="handleMultiSuggest(this, 'vehicle', {forceAll: true})" autocomplete="off" placeholder="Select multiple..."><span class="dropdown-icon" onclick="toggleSuggest('expVehicle', 'vehicle')">▼</span><div class="suggestion-box"></div></div><div id="expVehicleChips" class="chip-container"></div></div><div class="input-group"><label>Party Name</label><div class="input-wrapper"><input type="search" id="expParty" onkeyup="handleMultiSuggest(this, 'party', event)" onfocus="handleMultiSuggest(this, 'party', {forceAll: true})" autocomplete="off" placeholder="Select multiple..."><span class="dropdown-icon" onclick="toggleSuggest('expParty', 'party')">▼</span><div class="suggestion-box"></div></div><div id="expPartyChips" class="chip-container"></div></div><div class="input-group" id="expProductGroup"><label>Product Name</label><div class="input-wrapper"><input type="search" id="expProduct" onkeyup="handleMultiSuggest(this, 'product', event)" onfocus="handleMultiSuggest(this, 'product', {forceAll: true})" autocomplete="off" placeholder="Select multiple..."><span class="dropdown-icon" onclick="toggleSuggest('expProduct', 'product')">▼</span><div class="suggestion-box"></div></div><div id="expProductChips" class="chip-container"></div></div><div class="input-group"><label>Status</label><div class="input-wrapper"><input type="search" id="expStatus" onkeyup="handleMultiSuggest(this, 'status', event)" onfocus="handleMultiSuggest(this, 'status', {forceAll: true})" autocomplete="off" placeholder="Select multiple..."><span class="dropdown-icon" onclick="toggleSuggest('expStatus', 'status')">▼</span><div class="suggestion-box"></div></div><div id="expStatusChips" class="chip-container"></div></div><div class="input-group"><label>From Date</label><div class="date-input-wrapper"><input type="search" id="expDateFrom" placeholder="DD-MM-YYYY" autocomplete="off" onblur="formatDate(this)"></div></div><div class="input-group"><label>To Date</label><div class="date-input-wrapper"><input type="search" id="expDateTo" placeholder="DD-MM-YYYY" autocomplete="off" onblur="formatDate(this)"></div></div><div class="input-group" style="grid-column: span 2;"><label>Sort By</label><select id="expSort"><option value="dateDesc">Date (Newest First)</option><option value="dateAsc">Date (Oldest First)</option><option value="partyAsc">Party (A-Z)</option><option value="partyDesc">Party (Z-A)</option></select></div></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button class="close-btn" onclick="document.getElementById('exportModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="generateReport()">Generate Data (Enter)</button></div></div></div>
+
+    <div id="reportModal" class="modal-overlay" style="z-index: 1000000;"><div class="modal-content" style="max-width: 90vw; width: 90vw; height: 90vh; display: flex; flex-direction: column;"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">📊 Report Preview</h2><div class="action-bar"><button class="btn-add-item" style="background:var(--success);" onclick="exportExcel()">📉 Save as Excel (CSV)</button><button class="btn-add-item" onclick="printReport()">🖨️ Print / Save PDF</button><button class="close-btn" onclick="document.getElementById('reportModal').style.display='none'">✖ Close</button></div></div><div class="table-container" style="flex:1; overflow:auto; margin-top:0;" id="reportTableContainer"></div></div></div>
+
+    <div id="headingModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">Add Heading</h2></div><div class="input-group" style="margin-bottom: 10px;"><label>Heading Name</label><input type="search" id="newHeadingName" autocomplete="off"></div><div class="input-group" style="margin-bottom: 20px;"><label>Type</label><select id="newHeadingType"><option value="perm">Permanent</option><option value="temp">Temporary</option></select></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="document.getElementById('headingModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="executeAddHeading()">Add</button></div></div></div>
+    <div id="renameHeadingModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">Rename Column</h2></div><div class="input-group" style="margin-bottom: 20px;"><label>New Column Name</label><input type="search" id="renameHeadingInput" autocomplete="off"></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="document.getElementById('renameHeadingModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="executeRenameHeading()">Save</button></div></div></div>
+    <div id="confirmDeleteModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:#ef4444;">Confirm Deletion</h2></div><p id="confirmDeleteText" style="font-size:13px; color:#475569; margin-bottom:20px; line-height:1.4;">Are you sure you want to permanently delete this column?</p><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="document.getElementById('confirmDeleteModal').style.display='none'">Cancel</button><button class="btn-add-item" style="background:#ef4444; width: auto; padding: 8px 20px;" onclick="executeRemovePermanent()">🗑️ Delete</button></div></div></div>
+    <div id="actionModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 id="actionModalTitle" style="margin: 0; font-size:16px; color:var(--primary);">Action</h2></div><div id="renameSection" style="display:none; margin-bottom:15px;"><div class="input-group"><label>New Name</label><input type="search" id="newPartyNameInput" autocomplete="off"></div></div><div id="detailSection" style="display:none; margin-bottom:15px;"><div class="input-group" style="margin-bottom:10px;"><label>Heading (e.g., Phone)</label><input type="search" id="detailHeadingInput" autocomplete="off"></div><div class="input-group"><label>Value</label><input type="search" id="detailValueInput" autocomplete="off"></div></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="closeActionModal()">Cancel</button><button class="btn-add-item" id="actionSaveBtn" style="width: auto; padding: 8px 20px;" onclick="handleModalSave()">Save</button></div></div></div>
+
+    <div class="shortcut-legend">Alt+1: Bills | Alt+2: Tyre | Alt+3: Dash | Alt+4: Party | Alt+5: All Bills | Alt+6: All Tyres | Alt+7: Stock | Alt+8: Tyre Dash | Alt+S: Save | Alt+C: Calc | Esc: Close</div>
 </div>
-
-<div id="tyreStockView" class="app-container full-view" style="display: none;">
-    <div class="header">
-        <h2>🛞 Smart Tyre Stock Inventory</h2>
-        <div class="action-bar">
-            <button class="btn-home" onclick="switchToAllTyresView()">← Back to Tyres</button>
-        </div>
-    </div>
-    <div class="metrics-row" style="margin-bottom: 15px; gap:10px;">
-        <div class="metric-card metric-success" style="padding: 15px;"><h3 style="font-size:11px; margin-bottom:5px;">🟢 Ready to Use</h3><p class="value" id="stockReady" style="font-size:20px;">0</p></div>
-        <div class="metric-card metric-warning" style="padding: 15px;"><h3 style="font-size:11px; margin-bottom:5px;">🟡 Action Needed / At Vendor</h3><p class="value" id="stockAction" style="font-size:20px;">0</p></div>
-        <div class="metric-card" style="padding: 15px; border-left-color:#ef4444;"><h3 style="font-size:11px; margin-bottom:5px;">🔴 Dead / Scrap / Sold</h3><p class="value" id="stockDead" style="font-size:20px;">0</p></div>
-        <div class="metric-card metric-primary" style="padding: 15px;"><h3 style="font-size:11px; margin-bottom:5px;">🔵 Total Inventory</h3><p class="value" id="stockTotal" style="font-size:20px;">0</p></div>
-    </div>
-    <div class="erp-section" style="margin-bottom: 10px;">
-        <h3 class="erp-section-title">Manual Stock Entry (Add New Tyres)</h3>
-        <div class="form-grid" style="grid-template-columns: 1fr 1.5fr 1fr 1fr 1.5fr auto;">
-            <div class="input-group"><label>Date</label><div class="date-input-wrapper"><input type="search" id="stkDate" placeholder="DD-MM-YY" autocomplete="off" onblur="formatDate(this)"><input type="date" onchange="syncDate(this, 'stkDate')" tabindex="-1"></div></div>
-            <div class="input-group"><label>Tyre No</label><div class="input-wrapper"><input type="search" id="stkTyre" autocomplete="off" onkeyup="handleSuggest(this, 'tyre', event)" onfocus="handleSuggest(this, 'tyre', {forceAll:true})"><span class="dropdown-icon" onclick="toggleSuggest('stkTyre', 'tyre')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><label>Vehicle Out (Optional)</label><div class="input-wrapper"><input type="search" id="stkVeh" autocomplete="off" onkeyup="handleSuggest(this, 'vehicle', event)" onfocus="handleSuggest(this, 'vehicle', {forceAll:true})"><span class="dropdown-icon" onclick="toggleSuggest('stkVeh', 'vehicle')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><label>Status</label><div class="input-wrapper"><input type="search" id="stkStatus" autocomplete="off" placeholder="NEW STOCK" onkeyup="handleSuggest(this, 'tyreStatus', event)" onfocus="handleSuggest(this, 'tyreStatus', {forceAll:true})"><span class="dropdown-icon" onclick="toggleSuggest('stkStatus', 'tyreStatus')">▼</span><div class="suggestion-box"></div></div></div>
-            <div class="input-group"><label>Remark</label><input type="search" id="stkRemark" autocomplete="off"></div>
-            <div class="input-group"><button class="btn-add-item" id="btnAddStock" onclick="addManualStock()">+ Add Stock</button></div>
-        </div>
-    </div>
-    <div class="table-container" style="flex:1;">
-        <table class="main-table">
-            <thead><tr><th style="min-width: 100px;">Date</th><th>Tyre No</th><th>Vehicle (Out From)</th><th>Current Status</th><th>Remark</th><th>Source Type</th><th>Actions</th></tr></thead>
-            <tbody id="stockTableBody"></tbody>
-        </table>
-    </div>
-</div>
-
-<div id="partyView" class="app-container" style="display: none;">
-    <div class="header"><h2>👥 Party Directory</h2><button class="btn-home" onclick="switchToInventoryView()">← Back to Bills</button></div>
-    <div class="party-controls">
-        <div class="input-group" style="flex:1;"><input type="search" id="partySearch" placeholder="Search Party..." autocomplete="off" onkeyup="renderPartyFullList()"></div>
-        <button class="btn-add-item" style="width: auto; margin: 0; padding: 8px 15px;" onclick="openAddPartyModal()">+ Add Party</button>
-    </div>
-    <div id="partyListContainer" class="party-grid"></div>
-</div>
-
-<div id="dashboardView" class="app-container" style="display: none;">
-    <div class="header" style="flex-direction: column; align-items: flex-start; gap: 10px;">
-        <div style="display: flex; justify-content: space-between; width: 100%;">
-            <h2>📊 Purchase Analytics Dashboard</h2>
-            <button class="btn-home" onclick="switchToInventoryView()">← Back to Bills</button>
-        </div>
-        <div style="display:flex; gap: 10px; flex-wrap: wrap; width: 100%; align-items: center;" id="dashFiltersContainer">
-            <input type="search" id="dashGlobalFilter" placeholder="Filter by Party Name..." autocomplete="off" onkeyup="renderDashboard()" style="width: 200px; padding: 6px 10px; border-radius:4px; border:1px solid #cbd5e1; font-size:12px;">
-            <div id="dashCustomFilters" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
-        </div>
-    </div>
-    <div class="metrics-row">
-        <div class="metric-card"><h3>Total Purchase Value</h3><p class="value" id="dashMetricTotal">₹0</p></div>
-        <div class="metric-card metric-primary"><h3>Total Invoices</h3><p class="value" id="dashMetricCount">0</p></div>
-        <div class="metric-card metric-success"><h3>Average Bill Value</h3><p class="value" id="dashMetricAvg">₹0</p></div>
-        <div class="metric-card metric-warning"><h3>Top Supplier</h3><p class="value" id="dashMetricTopParty" style="font-size: 20px;">-</p></div>
-    </div>
-    <div class="charts-row">
-        <div class="chart-container"><h3>Spending by Party (Top 10)</h3><div id="dashChartParty"></div></div>
-        <div class="chart-container"><h3>Monthly Expenditure Trend</h3><div id="dashChartMonth"></div></div>
-    </div>
-</div>
-
-<div id="tyreDashboardView" class="app-container" style="display: none;">
-    <div class="header">
-        <h2>📊 Tyre Analytics Dashboard</h2>
-        <div style="display:flex; gap: 15px;">
-            <input type="search" id="tyreDashGlobalFilter" placeholder="Filter by Vehicle No..." autocomplete="off" onkeyup="renderTyreDashboard()" style="width: 250px; padding: 8px 12px; border-radius:4px; border:1px solid #cbd5e1;">
-            <button class="btn-home" onclick="switchToTyreView()">← Back to Tyres</button>
-        </div>
-    </div>
-    <div class="metrics-row">
-        <div class="metric-card"><h3>Total Tyres Replaced</h3><p class="value" id="tyreDashMetricTotal">0</p></div>
-        <div class="metric-card metric-primary"><h3>Avg Run KM</h3><p class="value" id="tyreDashMetricAvgKM">0</p></div>
-        <div class="metric-card metric-success"><h3>Avg Days Run</h3><p class="value" id="tyreDashMetricAvgDays">0</p></div>
-        <div class="metric-card metric-warning"><h3>Highest Consumption Veh</h3><p class="value" id="tyreDashMetricTopVeh" style="font-size: 20px;">-</p></div>
-        <div class="metric-card" style="border-left-color: #8b5cf6;"><h3>Total Tyres Sold</h3><p class="value" id="tyreDashMetricSold">0</p></div>
-    </div>
-    <div class="charts-row">
-        <div class="chart-container"><h3>Tyre Changes by Vehicle (Top 10)</h3><div id="tyreDashChartVeh"></div></div>
-        <div class="chart-container"><h3>Monthly Replacement Trend</h3><div id="tyreDashChartMonth"></div></div>
-    </div>
-</div>
-
-<div id="companyNameModal" class="modal-overlay" style="z-index: 1000001;"><div class="modal-content" style="max-width: 400px;"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">🏢 Set Company Name</h2></div><div class="input-group" style="margin-bottom: 20px;"><label>Company Name</label><input type="search" id="newCompanyNameInput" autocomplete="off" placeholder="Enter Company Name"></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="document.getElementById('companyNameModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="executeSetCompanyName()">Save</button></div></div></div>
-
-<div id="daysCalcModal" class="modal-overlay" style="z-index: 1000000;"><div class="modal-content" style="max-width: 450px;"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">⏱️ Lifecycle Duration Calculator</h2></div><div class="form-grid" style="grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 15px;"><div class="input-group"><label>Installation Date</label><div class="date-input-wrapper"><input type="search" id="calcFittedDate" placeholder="DD-MM-YY" autocomplete="off" onblur="formatDate(this)"></div></div><div class="input-group"><label>Dismount Date</label><div class="date-input-wrapper"><input type="search" id="calcRemovedDate" placeholder="DD-MM-YY" autocomplete="off" onblur="formatDate(this)"></div></div></div><label style="margin-bottom:15px; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:12px; font-weight:700; color:var(--accent);"><input type="checkbox" id="useCurrentDateCheck" onchange="toggleCurrentDate(this)" style="width:auto; margin:0;"> Sync Dismount Date with Invoice Date</label><div style="background:var(--bg); padding:15px; border-radius:6px; border:1px solid #c7d2fe; text-align:center; margin-bottom:20px;"><div style="font-size:11px; color:#64748b; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">Total Duration</div><div id="calcResultDisplay" style="font-size:16px; font-weight:800; color:var(--accent);">-</div><div id="calcResultYMD" style="font-size:12px; color:#475569; margin-top:5px; font-weight:600;">(0 Yrs, 0 Mos, 0 Days)</div></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="btn-icon" style="color:var(--primary); border:1px solid #cbd5e1;" onclick="doCalcDays()">🔄 See Life Cycle (Enter)</button><button class="close-btn" onclick="document.getElementById('daysCalcModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="applyDaysCalc()">✔️ Apply Days</button></div></div></div>
-
-<div id="exportModal" class="modal-overlay"><div class="modal-content" style="max-width: 700px;"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">🖨️ Generate Report & Export</h2></div><div class="form-grid" style="grid-template-columns: 1fr 1fr;"><div class="input-group"><label>Vehicle No</label><div class="input-wrapper"><input type="search" id="expVehicle" onkeyup="handleMultiSuggest(this, 'vehicle', event)" onfocus="handleMultiSuggest(this, 'vehicle', {forceAll: true})" autocomplete="off" placeholder="Select multiple..."><span class="dropdown-icon" onclick="toggleSuggest('expVehicle', 'vehicle')">▼</span><div class="suggestion-box"></div></div><div id="expVehicleChips" class="chip-container"></div></div><div class="input-group"><label>Party Name</label><div class="input-wrapper"><input type="search" id="expParty" onkeyup="handleMultiSuggest(this, 'party', event)" onfocus="handleMultiSuggest(this, 'party', {forceAll: true})" autocomplete="off" placeholder="Select multiple..."><span class="dropdown-icon" onclick="toggleSuggest('expParty', 'party')">▼</span><div class="suggestion-box"></div></div><div id="expPartyChips" class="chip-container"></div></div><div class="input-group" id="expProductGroup"><label>Product Name</label><div class="input-wrapper"><input type="search" id="expProduct" onkeyup="handleMultiSuggest(this, 'product', event)" onfocus="handleMultiSuggest(this, 'product', {forceAll: true})" autocomplete="off" placeholder="Select multiple..."><span class="dropdown-icon" onclick="toggleSuggest('expProduct', 'product')">▼</span><div class="suggestion-box"></div></div><div id="expProductChips" class="chip-container"></div></div><div class="input-group"><label>Status</label><div class="input-wrapper"><input type="search" id="expStatus" onkeyup="handleMultiSuggest(this, 'status', event)" onfocus="handleMultiSuggest(this, 'status', {forceAll: true})" autocomplete="off" placeholder="Select multiple..."><span class="dropdown-icon" onclick="toggleSuggest('expStatus', 'status')">▼</span><div class="suggestion-box"></div></div><div id="expStatusChips" class="chip-container"></div></div><div class="input-group"><label>From Date</label><div class="date-input-wrapper"><input type="search" id="expDateFrom" placeholder="DD-MM-YYYY" autocomplete="off" onblur="formatDate(this)"></div></div><div class="input-group"><label>To Date</label><div class="date-input-wrapper"><input type="search" id="expDateTo" placeholder="DD-MM-YYYY" autocomplete="off" onblur="formatDate(this)"></div></div><div class="input-group" style="grid-column: span 2;"><label>Sort By</label><select id="expSort"><option value="dateDesc">Date (Newest First)</option><option value="dateAsc">Date (Oldest First)</option><option value="partyAsc">Party (A-Z)</option><option value="partyDesc">Party (Z-A)</option></select></div></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button class="close-btn" onclick="document.getElementById('exportModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="generateReport()">Generate Data (Enter)</button></div></div></div>
-
-<div id="reportModal" class="modal-overlay" style="z-index: 1000000;"><div class="modal-content" style="max-width: 90vw; width: 90vw; height: 90vh; display: flex; flex-direction: column;"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">📊 Report Preview</h2><div class="action-bar"><button class="btn-add-item" style="background:var(--success);" onclick="exportExcel()">📉 Save as Excel (CSV)</button><button class="btn-add-item" onclick="printReport()">🖨️ Print / Save PDF</button><button class="close-btn" onclick="document.getElementById('reportModal').style.display='none'">✖ Close</button></div></div><div class="table-container" style="flex:1; overflow:auto; margin-top:0;" id="reportTableContainer"></div></div></div>
-
-<div id="headingModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">Add Heading</h2></div><div class="input-group" style="margin-bottom: 10px;"><label>Heading Name</label><input type="search" id="newHeadingName" autocomplete="off"></div><div class="input-group" style="margin-bottom: 20px;"><label>Type</label><select id="newHeadingType"><option value="perm">Permanent</option><option value="temp">Temporary</option></select></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="document.getElementById('headingModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="executeAddHeading()">Add</button></div></div></div>
-<div id="renameHeadingModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:var(--primary);">Rename Column</h2></div><div class="input-group" style="margin-bottom: 20px;"><label>New Column Name</label><input type="search" id="renameHeadingInput" autocomplete="off"></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="document.getElementById('renameHeadingModal').style.display='none'">Cancel</button><button class="btn-add-item" style="width: auto; padding: 8px 20px;" onclick="executeRenameHeading()">Save</button></div></div></div>
-<div id="confirmDeleteModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 style="margin: 0; font-size:16px; color:#ef4444;">Confirm Deletion</h2></div><p id="confirmDeleteText" style="font-size:13px; color:#475569; margin-bottom:20px; line-height:1.4;">Are you sure you want to permanently delete this column?</p><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="document.getElementById('confirmDeleteModal').style.display='none'">Cancel</button><button class="btn-add-item" style="background:#ef4444; width: auto; padding: 8px 20px;" onclick="executeRemovePermanent()">🗑️ Delete</button></div></div></div>
-<div id="actionModal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h2 id="actionModalTitle" style="margin: 0; font-size:16px; color:var(--primary);">Action</h2></div><div id="renameSection" style="display:none; margin-bottom:15px;"><div class="input-group"><label>New Name</label><input type="search" id="newPartyNameInput" autocomplete="off"></div></div><div id="detailSection" style="display:none; margin-bottom:15px;"><div class="input-group" style="margin-bottom:10px;"><label>Heading (e.g., Phone)</label><input type="search" id="detailHeadingInput" autocomplete="off"></div><div class="input-group"><label>Value</label><input type="search" id="detailValueInput" autocomplete="off"></div></div><div style="display:flex; justify-content:flex-end; gap:10px;"><button class="close-btn" onclick="closeActionModal()">Cancel</button><button class="btn-add-item" id="actionSaveBtn" style="width: auto; padding: 8px 20px;" onclick="handleModalSave()">Save</button></div></div></div>
-
-<div class="shortcut-legend">Alt+1: Bills | Alt+2: Tyre | Alt+3: Dash | Alt+4: Party | Alt+5: All Bills | Alt+6: All Tyres | Alt+7: Stock | Alt+8: Tyre Dash | Alt+S: Save | Alt+C: Calc | Esc: Close</div>
 <script>
+// --- SECURE LOGIN GATEWAY LOGIC ---
+function togglePassword(id) {
+    const input = document.getElementById(id);
+    if (input.type === "password") { input.type = "text"; } 
+    else { input.type = "password"; }
+}
+
+function getDbKey() {
+    const user = localStorage.getItem('df_activeUser');
+    return user ? 'nsLogisticsData_' + user : 'nsLogisticsData';
+}
+
+function checkAuthSession() {
+    const activeUser = localStorage.getItem('df_activeUser');
+    if(activeUser) {
+        document.getElementById('loginGateway').style.display = 'none';
+        document.getElementById('mainAppContent').style.display = 'flex';
+        loadDatabase();
+        setTimeout(() => { window.focus(); document.getElementById('invDate')?.focus(); document.getElementById('invDate')?.select(); }, 400);
+    } else {
+        document.getElementById('loginGateway').style.display = 'flex';
+        document.getElementById('mainAppContent').style.display = 'none';
+        document.getElementById('logId').focus();
+    }
+}
+
+function toggleLoginView(viewId) {
+    document.getElementById('viewLogin').style.display = 'none';
+    document.getElementById('viewSignup').style.display = 'none';
+    document.getElementById('viewForgot').style.display = 'none';
+    document.getElementById('resetNewPassSection').style.display = 'none';
+    document.getElementById('forgotBtn').innerText = 'Verify Identity';
+    document.getElementById('forgotBtn').setAttribute('onclick', 'executeForgot()');
+    
+    document.querySelectorAll('.login-error').forEach(e => e.style.display = 'none');
+    document.getElementById(viewId).style.display = 'block';
+    
+    if(viewId === 'viewLogin') document.getElementById('logId').focus();
+    if(viewId === 'viewSignup') document.getElementById('signId').focus();
+    if(viewId === 'viewForgot') document.getElementById('forgotId').focus();
+}
+
+function showAuthError(elementId, msg) {
+    const el = document.getElementById(elementId);
+    el.innerText = msg;
+    el.style.display = 'block';
+}
+
+function executeSignUp() {
+    const id = document.getElementById('signId').value.trim();
+    const email = document.getElementById('signEmail').value.trim();
+    const pass = document.getElementById('signPass').value;
+    if(!id || !email || !pass) return showAuthError('signMsg', 'All fields are required.');
+    if(!email.includes('@')) return showAuthError('signMsg', 'Please enter a valid email.');
+    
+    let users = JSON.parse(localStorage.getItem('df_users')) || {};
+    if(users[id]) return showAuthError('signMsg', 'User ID already exists. Please Sign In.');
+    
+    users[id] = { email: email, pass: pass };
+    localStorage.setItem('df_users', JSON.stringify(users));
+    localStorage.setItem('df_activeUser', id);
+    
+    document.getElementById('signId').value = ''; document.getElementById('signEmail').value = ''; document.getElementById('signPass').value = '';
+    undoStack = []; redoStack = []; // CLEAR HISTORY FOR NEW USER
+    checkAuthSession();
+}
+
+function executeLogin() {
+    const id = document.getElementById('logId').value.trim();
+    const pass = document.getElementById('logPass').value;
+    if(!id || !pass) return showAuthError('loginMsg', 'ID and Password required.');
+    
+    let users = JSON.parse(localStorage.getItem('df_users')) || {};
+    if(!users[id] || users[id].pass !== pass) return showAuthError('loginMsg', 'Invalid ID or Password.');
+    
+    localStorage.setItem('df_activeUser', id);
+    document.getElementById('logId').value = ''; document.getElementById('logPass').value = '';
+    undoStack = []; redoStack = []; // CLEAR HISTORY FROM PREVIOUS USER
+    checkAuthSession();
+}
+
+function executeLogout() {
+    localStorage.removeItem('df_activeUser');
+    undoStack = []; redoStack = []; // SECURELY WIPE HISTORY ON LOGOUT
+    document.getElementById('loginGateway').style.display = 'flex';
+    document.getElementById('mainAppContent').style.display = 'none';
+    toggleLoginView('viewLogin');
+}
+
+function executeForgot() {
+    const id = document.getElementById('forgotId').value.trim();
+    const email = document.getElementById('forgotEmail').value.trim();
+    if(!id || !email) return showAuthError('forgotMsg', 'Please enter your ID and Email.');
+    
+    let users = JSON.parse(localStorage.getItem('df_users')) || {};
+    if(users[id] && users[id].email === email) {
+        document.getElementById('forgotMsg').innerText = "Identity Verified! Please set your new password below.";
+        document.getElementById('forgotMsg').style.display = 'block';
+        document.getElementById('resetNewPassSection').style.display = 'block';
+        document.getElementById('forgotBtn').innerText = 'Save New Password';
+        document.getElementById('forgotBtn').style.background = 'var(--success)';
+        document.getElementById('forgotBtn').setAttribute('onclick', 'executeSaveNewPassword()');
+        document.getElementById('forgotNewPass').focus();
+    } else {
+        showAuthError('forgotMsg', 'No account matches this ID and Email combination.');
+    }
+}
+
+function executeSaveNewPassword() {
+    const id = document.getElementById('forgotId').value.trim();
+    const newPass = document.getElementById('forgotNewPass').value;
+    if(!newPass) return showAuthError('forgotMsg', 'Please enter a new password.');
+    
+    let users = JSON.parse(localStorage.getItem('df_users')) || {};
+    users[id].pass = newPass;
+    localStorage.setItem('df_users', JSON.stringify(users));
+    
+    document.getElementById('forgotId').value = ''; document.getElementById('forgotEmail').value = ''; document.getElementById('forgotNewPass').value = '';
+    toggleLoginView('viewLogin');
+    showAuthError('loginMsg', 'Password updated successfully! Please log in.');
+    document.getElementById('loginMsg').style.color = 'var(--success)';
+    document.getElementById('loginMsg').style.backgroundColor = '#dcfce7';
+    document.getElementById('loginMsg').style.borderColor = '#86efac';
+}
+
+document.getElementById('loginGateway').addEventListener('keydown', function(e) {
+    if(e.key === 'Enter') {
+        e.preventDefault();
+        if(document.getElementById('viewLogin').style.display !== 'none') executeLogin();
+        else if(document.getElementById('viewSignup').style.display !== 'none') executeSignUp();
+        else if(document.getElementById('viewForgot').style.display !== 'none') {
+            if(document.getElementById('resetNewPassSection').style.display === 'none') executeForgot();
+            else executeSaveNewPassword();
+        }
+    }
+});
+
+
+// --- MAIN ERP LOGIC ---
 let companyName = "Your Company Name"; 
 let partyMaster = {}; let masteredProducts = []; let masteredStatuses = ["SOLD", "SCRAP", "NEW", "RETURNED"]; 
 let masteredVehicles = []; let currentEditingParty = ""; let currentModalAction = null; let customHeadings = [];
@@ -456,8 +702,8 @@ function promptCompanyName() { document.getElementById('newCompanyNameInput').va
 function executeSetCompanyName() { let name = document.getElementById('newCompanyNameInput').value.trim(); if (name !== "") { companyName = name; document.getElementById('companyNameDisplay').innerText = companyName; saveDatabase(); showToast('Company Name updated.'); } document.getElementById('companyNameModal').style.display = 'none'; }
 
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); localStorage.setItem('dfDarkMode', document.body.classList.contains('dark-mode')); }
-function exportBackup() { const data = localStorage.getItem('nsLogisticsData'); if(!data) return alert("No data available to backup."); const blob = new Blob([data], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); let safeComp = companyName.replace(/[^a-zA-Z0-9]/g, '_'); a.href = url; a.download = `DigiFleet_${safeComp}_Backup_${new Date().getTime()}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-function restoreBackup(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(evt) { try { const content = evt.target.result; JSON.parse(content); localStorage.setItem('nsLogisticsData', content); alert("Backup restored successfully!"); location.reload(); } catch(err) { alert("Invalid backup file. Restoration failed."); } }; reader.readAsText(file); e.target.value = ''; }
+function exportBackup() { const data = localStorage.getItem(getDbKey()); if(!data) return alert("No data available to backup."); const blob = new Blob([data], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); let safeComp = companyName.replace(/[^a-zA-Z0-9]/g, '_'); a.href = url; a.download = `DigiFleet_${safeComp}_Backup_${new Date().getTime()}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+function restoreBackup(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = function(evt) { try { const content = evt.target.result; JSON.parse(content); localStorage.setItem(getDbKey(), content); alert("Backup restored successfully!"); location.reload(); } catch(err) { alert("Invalid backup file. Restoration failed."); } }; reader.readAsText(file); e.target.value = ''; }
 
 function toggleAlerts() { document.getElementById('alertsDropdown').classList.toggle('show-dropdown'); }
 function updateAlerts() {
@@ -480,19 +726,24 @@ function healTableAlignment() {
 
 function saveDatabase(skipHistory = false) {
     if (window.isRestoring) return; 
-    const oldData = localStorage.getItem('nsLogisticsData');
+    const dbKey = getDbKey();
+    const oldData = localStorage.getItem(dbKey);
     const data = { companyName, partyMaster, masteredProducts, masteredStatuses, masteredVehicles, customHeadings, masteredTyreStatuses, masteredTyres, manualTyreStock, tyreOverrides, invTable: document.getElementById('tableBody').innerHTML, tyreTable: document.getElementById('tyreTableBody').innerHTML };
     const newDataStr = JSON.stringify(data);
     if (!skipHistory && oldData && oldData !== newDataStr) { undoStack.push(oldData); if(undoStack.length > 50) undoStack.shift(); redoStack = []; }
-    localStorage.setItem('nsLogisticsData', newDataStr); updateAlerts();
+    localStorage.setItem(dbKey, newDataStr); updateAlerts();
 }
 
-function performUndo() { if (undoStack.length > 0) { redoStack.push(localStorage.getItem('nsLogisticsData')); localStorage.setItem('nsLogisticsData', undoStack.pop()); loadDatabase(true); document.getElementById('toastNotification').style.display = 'none'; } }
-function performRedo() { if (redoStack.length > 0) { undoStack.push(localStorage.getItem('nsLogisticsData')); localStorage.setItem('nsLogisticsData', redoStack.pop()); loadDatabase(true); document.getElementById('toastNotification').style.display = 'none'; } }
+function performUndo() { if (undoStack.length > 0) { redoStack.push(localStorage.getItem(getDbKey())); localStorage.setItem(getDbKey(), undoStack.pop()); loadDatabase(true); document.getElementById('toastNotification').style.display = 'none'; } }
+function performRedo() { if (redoStack.length > 0) { undoStack.push(localStorage.getItem(getDbKey())); localStorage.setItem(getDbKey(), redoStack.pop()); loadDatabase(true); document.getElementById('toastNotification').style.display = 'none'; } }
 
 function loadDatabase(isUndoRedo = false) {
-    window.isRestoring = true; const saved = localStorage.getItem('nsLogisticsData');
+    window.isRestoring = true; 
+    const dbKey = getDbKey();
+    const saved = localStorage.getItem(dbKey);
+    
     if(localStorage.getItem('dfDarkMode') === 'true') document.body.classList.add('dark-mode');
+    
     if(saved) {
         try {
             const data = JSON.parse(saved);
@@ -532,14 +783,26 @@ function loadDatabase(isUndoRedo = false) {
             document.querySelectorAll('.custom-in-perm, .custom-in-temp').forEach(el => el.parentElement.remove()); document.querySelectorAll('#tableHead th[id^="th_customField_"]').forEach(el => el.remove());
             if(Array.isArray(data.customHeadings)) { customHeadings = data.customHeadings; customHeadings.forEach(h => renderHeading(h, false)); }
         } catch(e) { console.error("Database repaired."); }
+    } else {
+        // RESET STATE FOR NEW/EMPTY USER
+        companyName = "Your Company Name"; partyMaster = {}; masteredProducts = []; masteredStatuses = ["SOLD", "SCRAP", "NEW", "RETURNED"];
+        masteredVehicles = []; masteredTyres = []; manualTyreStock = []; tyreOverrides = {}; customHeadings = []; currentInvoiceItems = []; currentTyreItems = [];
+        masteredTyreStatuses = ["SCRAP IN GODOWN", "SOLD", "BLUST TYRE", "REMOLD", "GIVEN TO", "NEW STOCK", "MISSING"];
+        document.getElementById('tableBody').innerHTML = ""; document.getElementById('tyreTableBody').innerHTML = ""; document.getElementById('companyNameDisplay').innerText = companyName;
+        document.querySelectorAll('#tableHead th[id^="th_customField_"]').forEach(el => el.remove()); document.querySelectorAll('.custom-in-perm, .custom-in-temp').forEach(el => el.parentElement.remove());
     }
     healTableAlignment(); window.isRestoring = false; saveDatabase(isUndoRedo); renderTyreStock(); applyExcelFilterCore('tableBody'); applyExcelFilterCore('tyreTableBody'); updateAlerts();
 }
 
 let lastActiveField = null;
 document.addEventListener('focusin', function(e) { if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') { lastActiveField = e.target; } });
-window.addEventListener('focus', function() { if (lastActiveField) { setTimeout(() => { lastActiveField.focus(); if(lastActiveField.tagName === 'INPUT') lastActiveField.select(); }, 150); } else { setTimeout(() => { document.getElementById('invDate').focus(); document.getElementById('invDate').select(); }, 150); } });
-window.onload = function() { loadDatabase(); setTimeout(() => { window.focus(); document.getElementById('invDate').focus(); document.getElementById('invDate').select(); }, 400); };
+window.addEventListener('focus', function() { 
+    if(document.getElementById('loginGateway').style.display !== 'none') return;
+    if (lastActiveField) { setTimeout(() => { lastActiveField.focus(); if(lastActiveField.tagName === 'INPUT') lastActiveField.select(); }, 150); } else { setTimeout(() => { document.getElementById('invDate')?.focus(); document.getElementById('invDate')?.select(); }, 150); } 
+});
+
+// Initialize App Check
+window.onload = function() { checkAuthSession(); };
 
 document.getElementById('tableBody').addEventListener('keyup', function(e) { 
     if(e.target.tagName === 'TD') {
@@ -661,12 +924,16 @@ function openExcelFilter(e, btn, tbodyId) {
 
         const months = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
         Object.keys(tree).sort((a,b)=>b-a).forEach(y => {
-            listHtml += `<div class="tree-node"><label class="excel-chk-label" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:center; gap:5px; padding:2px 0;"><span class="toggle-btn" style="width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; border:1px solid #cbd5e1; border-radius:3px; font-size:10px; line-height:1; background:#f8fafc;" onclick="toggleTree(event, this)">+</span><input type="checkbox" class="tree-chk year-chk" value="${y}" style="margin:0; cursor:pointer;"> ${y}</label><div class="tree-child" style="display:none; margin-left:18px; border-left:1px dashed #cbd5e1; padding-left:5px;">`;
+            listHtml += `<div class="tree-node"><div class="tree-node-row"><span class="tree-toggle-box" onclick="toggleTree(event, this)">+</span><label class="tree-label-text excel-chk-label"><input type="checkbox" class="tree-chk year-chk" value="${y}" style="margin:0; cursor:pointer;"> ${y}</label></div><div class="tree-child" style="display:none; margin-left:20px;">`;
             Object.keys(tree[y]).sort((a,b)=>b-a).forEach(m => {
-                listHtml += `<div class="tree-node"><label class="excel-chk-label" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:center; gap:5px; padding:2px 0;"><span class="toggle-btn" style="width:14px; height:14px; display:inline-flex; align-items:center; justify-content:center; border:1px solid #cbd5e1; border-radius:3px; font-size:10px; line-height:1; background:#f8fafc;" onclick="toggleTree(event, this)">+</span><input type="checkbox" class="tree-chk month-chk" value="${m}" style="margin:0; cursor:pointer;"> ${months[m]}</label><div class="tree-child" style="display:none; margin-left:18px; border-left:1px dashed #cbd5e1; padding-left:5px;">`;
-                tree[y][m].sort((a,b)=>b.d-a.d).forEach(item => {
+                listHtml += `<div class="tree-node"><div class="tree-node-row"><span class="tree-toggle-box" onclick="toggleTree(event, this)">+</span><label class="tree-label-text excel-chk-label"><input type="checkbox" class="tree-chk month-chk" value="${m}" style="margin:0; cursor:pointer;"> ${months[m]}</label></div><div class="tree-child" style="display:none; margin-left:20px;">`;
+                
+                let uniqueDates = []; let seenD = new Set();
+                tree[y][m].forEach(item => { if(!seenD.has(item.d)) { uniqueDates.push(item); seenD.add(item.d); } });
+
+                uniqueDates.sort((a,b)=>b.d-a.d).forEach(item => {
                     let dStr = String(item.d).padStart(2,'0'); let checked = (!activeFilters || activeFilters.has(item.raw)) ? 'checked' : '';
-                    listHtml += `<label class="excel-chk-label date-leaf" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:center; gap:5px; padding:2px 0;"><input type="checkbox" class="tree-chk leaf-chk" value="${item.raw}" ${checked} style="margin:0; cursor:pointer;"> ${dStr}</label>`;
+                    listHtml += `<div class="tree-node-row"><span class="tree-spacer"></span><label class="tree-label-text excel-chk-label date-leaf"><input type="checkbox" class="tree-chk leaf-chk" value="${item.raw}" ${checked} style="margin:0; cursor:pointer;"> ${dStr}</label></div>`;
                 });
                 listHtml += `</div></div>`;
             });
@@ -675,13 +942,13 @@ function openExcelFilter(e, btn, tbodyId) {
         if(blanks.size > 0) {
             blanks.forEach(bVal => {
                 let checked = (!activeFilters || activeFilters.has(bVal)) ? 'checked' : '';
-                listHtml += `<label class="excel-chk-label date-leaf" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:center; gap:5px; padding:2px 0;"><input type="checkbox" class="tree-chk leaf-chk" value="${bVal}" ${checked} style="margin:0; cursor:pointer;"> (Blanks / Others)</label>`;
+                listHtml += `<div class="tree-node-row"><span class="tree-spacer"></span><label class="tree-label-text excel-chk-label date-leaf"><input type="checkbox" class="tree-chk leaf-chk" value="${bVal}" ${checked} style="margin:0; cursor:pointer;"> (Blanks / Others)</label></div>`;
             });
         }
     } else {
         Array.from(vals).sort().forEach(val => {
             let safeVal = val.replace(/"/g, '&quot;'); let checked = (!activeFilters || activeFilters.has(val)) ? 'checked' : '';
-            listHtml += `<label class="excel-chk-label date-leaf" style="font-size:12px; font-weight:600; color:#334155; cursor:pointer; display:flex; align-items:flex-start; justify-content:flex-start; gap:8px; margin:0; padding:2px 0;"><input type="checkbox" class="leaf-chk" value="${safeVal}" ${checked} style="width:14px; height:14px; margin:0; margin-top:2px; flex-shrink:0; cursor:pointer;"> <span style="word-break: break-word; text-align: left; line-height: 1.3;">${safeVal}</span></label>`;
+            listHtml += `<div class="tree-node-row std-filter-row"><label class="tree-label-text excel-chk-label"><input type="checkbox" class="leaf-chk" value="${safeVal}" ${checked} style="margin:0; cursor:pointer;"> <span style="word-break: break-word;">${safeVal}</span></label></div>`;
         });
     }
 
@@ -713,37 +980,54 @@ function syncTreeStates() {
     document.querySelectorAll('.month-chk').forEach(mChk => {
         let childBox = mChk.closest('.tree-node').querySelector('.tree-child');
         if(childBox) {
-            let leafs = Array.from(childBox.querySelectorAll('.leaf-chk')).filter(l => l.closest('.excel-chk-label').style.display !== 'none');
+            let leafs = Array.from(childBox.querySelectorAll('.leaf-chk')).filter(l => l.closest('.tree-node-row').style.display !== 'none');
             if(leafs.length > 0) { let allChecked = leafs.every(l => l.checked); let someChecked = leafs.some(l => l.checked); mChk.checked = allChecked; mChk.indeterminate = someChecked && !allChecked; }
         }
     });
     document.querySelectorAll('.year-chk').forEach(yChk => {
         let childBox = yChk.closest('.tree-node').querySelector('.tree-child');
         if(childBox) {
-            let mChks = Array.from(childBox.querySelectorAll('.month-chk')).filter(m => m.closest('.excel-chk-label').style.display !== 'none');
+            let mChks = Array.from(childBox.querySelectorAll('.month-chk')).filter(m => m.closest('.tree-node-row').style.display !== 'none');
             if(mChks.length > 0) { let allChecked = mChks.every(m => m.checked); let someChecked = mChks.some(m => m.checked || m.indeterminate); yChk.checked = allChecked; yChk.indeterminate = someChecked && !allChecked; }
         }
     });
-    let allLeafs = Array.from(document.querySelectorAll('#excelChecklist .leaf-chk')).filter(l => l.closest('.excel-chk-label').style.display !== 'none');
+    let allLeafs = Array.from(document.querySelectorAll('#excelChecklist .leaf-chk')).filter(l => l.closest('.tree-node-row').style.display !== 'none');
     if(allLeafs.length > 0) { let allC = allLeafs.every(l => l.checked); let someC = allLeafs.some(l => l.checked); let sa = document.getElementById('excelSelectAll'); sa.checked = allC; sa.indeterminate = someC && !allC; }
 }
 
 function toggleAllExcel(source) {
-    document.querySelectorAll('#excelChecklist input[type="checkbox"]').forEach(chk => { let lbl = chk.closest('.excel-chk-label'); if(lbl && lbl.style.display !== 'none') chk.checked = source.checked; });
+    document.querySelectorAll('#excelChecklist input[type="checkbox"]').forEach(chk => { let lbl = chk.closest('.tree-node-row'); if(lbl && lbl.style.display !== 'none') chk.checked = source.checked; });
     if(document.querySelector('.tree-chk')) syncTreeStates();
 }
 
 function filterExcelList() {
     let text = document.getElementById('excelSearchBox').value.toUpperCase();
-    document.querySelectorAll('.date-leaf').forEach(lbl => { let match = lbl.innerText.toUpperCase().includes(text); lbl.style.display = match ? 'flex' : 'none'; });
+    
+    document.querySelectorAll('.date-leaf').forEach(lbl => { 
+        let match = lbl.innerText.toUpperCase().includes(text); 
+        lbl.closest('.tree-node-row').style.display = match ? 'flex' : 'none'; 
+    });
+    
     let treeChildren = document.querySelectorAll('.tree-child');
     if(treeChildren.length > 0) {
         treeChildren.forEach(tc => {
-            let hasVisible = Array.from(tc.querySelectorAll('.date-leaf')).some(l => l.style.display !== 'none');
-            if(hasVisible) { tc.style.display = 'block'; let btn = tc.previousElementSibling.querySelector('.toggle-btn'); if(btn) btn.innerText = '-'; tc.previousElementSibling.style.display = 'flex'; } 
-            else { tc.style.display = 'none'; tc.previousElementSibling.style.display = 'none'; }
+            let hasVisible = Array.from(tc.querySelectorAll('.date-leaf')).some(l => l.closest('.tree-node-row').style.display !== 'none');
+            if(hasVisible) { 
+                tc.style.display = 'block'; 
+                let btn = tc.previousElementSibling.querySelector('.tree-toggle-box'); 
+                if(btn) btn.innerText = '-'; 
+                tc.previousElementSibling.style.display = 'flex'; 
+            } else { 
+                tc.style.display = 'none'; 
+                tc.previousElementSibling.style.display = 'none'; 
+            }
         });
     }
+
+    document.querySelectorAll('.std-filter-row').forEach(row => {
+        let match = row.innerText.toUpperCase().includes(text);
+        row.style.display = match ? 'flex' : 'none';
+    });
 }
 
 function applyExcelFilter() {
@@ -965,7 +1249,7 @@ function navigateTable(cell, key) {
 }
 
 window.addEventListener('click', (e) => { 
-    if (!e.target.matches('input') && !e.target.matches('.dropdown-icon') && !e.target.classList.contains('suggestion-item') && !e.target.matches('td') && !e.target.closest('#excelFilterPopup') && !e.target.matches('.tbl-filter-btn') && !e.target.matches('.excel-chk-label') && !e.target.matches('input[type="checkbox"]') && !e.target.matches('.toggle-btn')) {
+    if (!e.target.matches('input') && !e.target.matches('.dropdown-icon') && !e.target.classList.contains('suggestion-item') && !e.target.matches('td') && !e.target.closest('#excelFilterPopup') && !e.target.matches('.tbl-filter-btn') && !e.target.matches('.excel-chk-label') && !e.target.matches('input[type="checkbox"]') && !e.target.matches('.tree-toggle-box')) {
         document.querySelectorAll('.suggestion-box').forEach(b => b.style.display = "none"); let p = document.getElementById('excelFilterPopup'); if(p) p.style.display = 'none';
     }
     if (!e.target.matches('.dot-btn')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show-dropdown'));
@@ -1094,7 +1378,7 @@ function renderDashboard() {
     const pc = document.getElementById('dashChartParty');
     if(pc) { pc.innerHTML = ""; if (Object.keys(pt).length === 0) { pc.innerHTML = "<div class='empty-state'>No data available</div>"; } else { let mx = Math.max(...Object.values(pt)); Object.entries(pt).sort((a,b) => b[1] - a[1]).slice(0, 10).forEach(([p,a]) => { let w = (a / mx) * 100; pc.innerHTML += `<div class="chart-bar-row"><div class="chart-label" title="${p}">${p}</div><div class="chart-track"><div class="chart-fill" style="width: ${w}%"></div></div><div class="chart-value">₹${a.toLocaleString('en-IN')}</div></div>`; }); } }
     const mc = document.getElementById('dashChartMonth');
-    if(mc) { mc.innerHTML = ""; if (Object.keys(mt).length === 0) { mc.innerHTML = "<div class='empty-state'>No data available</div>"; } else { let mx = Math.max(...Object.values(mt)); Object.entries(mt).sort().forEach(([m, a]) => { let w = (a / mx) * 100; mc.innerHTML += `<div class="chart-bar-row"><div class="chart-label">${m}</div><div class="chart-track"><div class="chart-fill success-bg" style="width: ${w}%"></div></div><div class="chart-value">₹${a.toLocaleString('en-IN')}</div></div>`; }); } }
+    if(mc) { mc.innerHTML = ""; if (Object.keys(mt).length === 0) { mc.innerHTML = "<div class='empty-state'>No data available</div>"; } else { let mx = Math.max(...Object.values(mt)); Object.entries(mt).sort().forEach(([m, a]) => { let w = (a / maxScale) * 100; mc.innerHTML += `<div class="chart-bar-row"><div class="chart-label">${m}</div><div class="chart-track"><div class="chart-fill success-bg" style="width: ${w}%"></div></div><div class="chart-value">₹${a.toLocaleString('en-IN')}</div></div>`; }); } }
 }
 
 function renderTyreDashboard() {
